@@ -1,0 +1,16 @@
+{
+    "$id":"mal.schema.json",
+    "description": "The model of a Backlogger user's MAL data",
+    "type": "object",
+    "properties":{
+        "username": {"type":"string", "description":"Username on MAL"},
+        "profileUrl": {"type":"string", "description": "URL of users profile", "format": "uri"},
+        "friends": {
+            "type": "array",
+            "items": {
+                "$ref":"#"
+            }
+        }
+    },
+    "required": ["username"]
+}

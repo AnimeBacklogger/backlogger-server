@@ -1,0 +1,40 @@
+{
+    "$id": "index.schema.json",
+    "type": "object",
+    "allOf": [
+        {
+            "$ref": "./basic.schema.json#"
+        },
+        {
+            "type": "object",
+            "properties": {
+                "malInformation": {
+                    "$ref": "./mal.schema.json"
+                }
+            }
+        },
+        {
+            "type": "object",
+            "properties": {
+                "signIn": {
+                    "allOf":[
+                        {"$ref": "./signIn.schema.json"},
+                        {"$ref": "./twitterSignIn.schema.json"}
+                    ]
+                }
+            },
+            "required": [ "signIn" ]
+        },
+        {
+            "type": "object",
+            "properties": {
+                "backlog": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "../backlog/basic.schema.json"
+                    }
+                }
+            }
+        },
+    ]
+}

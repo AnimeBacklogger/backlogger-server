@@ -1,0 +1,22 @@
+{
+    "$id": "mal.schema.json",
+    "description": "The model of an anime listing's MAL data. Taken from user anime list data. (with user specific data removed)",
+    "type": "object",
+    "properties":{
+        "tags": { "type": "", "description": "seems to always be empty string. Perhaps there for future expansion?" },
+        "anime_title": { "type": "string" },
+        "anime_num_episodes": { "type": "integer", "description": "number of episodes in this show" },
+        "anime_airing_status": { "type": "integer", "description": "1- Airing, 2- Aired, 3- NotYetAired" },
+        "anime_id": { "type": "integer", "description": "The anime ID on the MAL database" },
+        "anime_studios": { "type": "", "description": "seems to always be null. Perhaps there for future expansion?"},
+        "anime_licensors": { "type": "" },
+        "anime_season": { "type": "", "description": "seems to always be null. Perhaps there for future expansion?" },
+        "anime_url": { "type": "string", "format": "uri", "description":"Link to MAL, minus the 'http://myanimelist.net' part" },
+        "anime_image_path": { "type": "string", "format": "uri" },
+        "anime_media_type_string": { "type": "string", "description": "What type of anime: 'TV', 'OVA', 'Movie', 'Special'" },
+        "anime_start_date_string": { "type": "string", "pattern": "\\d{2}-\\d{2}-\\d{2}", "descrtiption": "When the anime started airing" },
+        "anime_end_date_string": { "type": "string", "pattern": "\\d{2}-\\d{2}-\\d{2}", "descrtiption": "When the anime finished airing" },
+        "priority_string": { "type": "" }
+    },
+    "required": ["anime_id", "anime_title", "anime_url"]
+}

@@ -1,0 +1,6 @@
+# NodeJs ignores:
+node_modules
+
+# Personal:
+old/
+tmp/

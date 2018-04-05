@@ -1,0 +1,16 @@
+{
+    "type":"object",
+    "properties": {
+        "hash": {
+            "type": "string",
+            "description": "bcrypt hash of password",
+            "pattern": "^[A-Za-z0-9/.\\$]+$"
+        },
+        "email": {
+            "type": "string",
+            "description": "user email address for password resets",
+            "format": "email"
+        }
+    },
+    "required": ["hash"]
+}

@@ -1,0 +1,7 @@
+{
+    "description": "The model of a Backlogger user's twitter sign in information",
+    "type":"object",
+    "properties": {
+        "twitterHandle":{ "type": "string"}
+    }
+}

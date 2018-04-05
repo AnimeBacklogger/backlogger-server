@@ -1,0 +1,13 @@
+{
+    "$id": "basic.schema.json",
+    "description": "The model of a Backlogger user's basic information",
+    "type": "object",
+    "properties":{
+        "name": {
+            "type": "string",
+             "description": "The username to be displayed",
+             "pattern": "^[\\w\\d-_]{1,30}$"
+        },
+        "malVerified": {"type": "boolean", "description": "Has the MAL account been verified as theirs?"}
+    }
+}

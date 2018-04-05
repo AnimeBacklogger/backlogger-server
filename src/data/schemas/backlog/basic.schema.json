@@ -1,0 +1,41 @@
+{
+    "$id": "basic.schema.json",
+    "description": "The model of a Backlog entry's basic data",
+    "type": "object",
+    "properties":{
+        "animeName": {
+            "type": "string",
+            "description": "A name for ths anime. (should be scraped from MAL)"
+        },
+        "malAnimeId": {
+            "type": "integer",
+            "description": "The MAL ID linked to this Anime. Used to retreive anime details.",
+        },
+        "personalScore": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10,
+            "description": "A personal score of 0-10 of how much the user wishes to watch this. (personal prority)"
+        },
+        "recommendations": {
+            "type": "array",
+            "items": {
+                "$ref":"#/definitions/recommandation"
+            }
+        }
+    },
+    "required": ["malAnimeId"],
+
+    "definitions": {
+        "recommandation": {
+            "type":"object",
+            "properties": {
+                "name": { "type": "string", "description": "name of user making recommendation"},
+                "backLoggerName":  { "type": "string", "description": "recommenders BackLogger username (for verification)"},
+                "score": {"type": "integer", "minimum": 0,"maximum": 10,"description": "score between 0-10 of how much they think the user will enjoy the show"},
+                "comment": {"type": "string", "maxLength": 240, "description": "A short comment about the recommendation"}
+            },
+            "required": ["name", "score"]
+        }
+    }
+}
