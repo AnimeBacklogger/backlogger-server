@@ -3,7 +3,7 @@
     "type": "object",
     "allOf": [
         {
-            "$ref": "./basic.schema.json#"
+            "$ref": "basic.schema.json"
         },
         {
             "type": "object",
@@ -35,6 +35,6 @@
                     }
                 }
             }
-        },
+        }
     ]
 }

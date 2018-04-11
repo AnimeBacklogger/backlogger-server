@@ -4,11 +4,11 @@
         "malVerified": true,
         "malInformation": {
             "username": "Chrolo",
-            "profileUrl": "myanimelist.net/users/Chrolo",
+            "profileUrl": "http://myanimelist.net/users/Chrolo",
             "friends": [
                 {
                     "username": "KarenApparently",
-                    "profileUrl": "myanimelist.net/users/KarenApparently"
+                    "profileUrl": "http://myanimelist.net/users/KarenApparently"
                 }
             ]
         },
@@ -72,15 +72,15 @@
         "malVerified": false,
         "malInformation": {
             "username": "goshinbi",
-            "profileUrl": "myanimelist.net/users/goshinbi",
+            "profileUrl": "http://myanimelist.net/users/goshinbi",
             "friends": [
                 {
                     "username": "KarenApparently",
-                    "profileUrl": "myanimelist.net/users/KarenApparently"
+                    "profileUrl": "http://myanimelist.net/users/KarenApparently"
                 },
                 {
                     "username": "Chrolo",
-                    "profileUrl": "myanimelist.net/users/Chrolo"
+                    "profileUrl": "http://myanimelist.net/users/Chrolo"
                 }
             ]
         },

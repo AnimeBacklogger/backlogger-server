@@ -1,91 +1,50 @@
-/* globals describe it*/
+/* globals describe it before*/
 const {expect} = require('chai');
 const proxyquire = require('proxyquire');
 const path = require('path');
-const TEST_SCHEMA_STUB_NAME = path.resolve(__dirname, './test/schema.json');
-const testSchemaStub = {
-    "$id": "wrong",
-    "something": {
-        "$ref": "../../bob.file"
-    },
-    "somethingElse": {
-        "data": {
-            "$ref": "./this.file"
-        }
-    },
-    '@noCallThru': true
-};
+const stubs = {};
+const uut = proxyquire('./index.js', stubs);
 
-const uut = proxyquire('./index.js', {
-    [TEST_SCHEMA_STUB_NAME]: testSchemaStub
-});
+const expectedSchemas = [
+    'anime/mal.schema.json',
+    'backlog/basic.schema.json',
+    'user/basic.schema.json',
+    'user/index.schema.json',
+    'user/mal.schema.json',
+    'user/signIn.schema.json',
+    'user/twitterSignIn.schema.json'
+];
 
-describe('/data/schemas/index', () => {
-
-    describe('loadSchema()', () => {
-        it('overwrites the $id of the schema with one relative to the schema root', () => {
-            expect(uut.loadSchema(TEST_SCHEMA_STUB_NAME)['$id']).to.equal('test/schema.json');
-        });
-
-        it('makes the $refs relative to the index.js', () => {
-            const result = uut.loadSchema(TEST_SCHEMA_STUB_NAME);
-            expect(result.something['$ref']).to.equal('../bob.file');
-            expect(result.somethingElse.data['$ref']).to.equal('test/this.file');
-        });
+describe('/data/schemas/index.js', () => {
+    before(() => {
+        return uut.loadSchemas();
     });
 
-    describe('objectKeyFinder()', () => {
-        it('calls the callback for each matching key in the object', () => {
-            let count = 0;
-            const cb = () => {
-                count++;
-            };
-
-            const tests = [
-                {
-                    input: {a: 1, b: 2, c: 3, d: 4, x: 'test'},
-                    expect: 1
-                },
-                {
-                    input: {a: 1, b: {x: 'test'}, c: 3, x: 'test'},
-                    expect: 2
-                },
-                {
-                    input: {a: 1, b: [{x: 'test'}, {x: 'test'}, {x: 'test'}], c: 3, x: 'test'},
-                    expect: 4
-                }
-            ];
-
-            tests.forEach(test => {
-                count = 0;
-                uut.objectKeyFinder(test.input, 'x', cb);
-                expect(count, `Expected to find key 'x' ${test.expect} times in ${JSON.stringify(test.input)}`).to.equal(test.expect);
-            });
-        });
-
-        it('replaces the key with value from callback ', () => {
-            const cb = () => 'carrot';
-
-            const tests = [
-                {
-                    input: {a: 1, b: 2, c: 3, d: 4, x: 'test'},
-                    expect: {a: 1, b: 2, c: 3, d: 4, x: 'carrot'}
-                },
-                {
-                    input: {a: 1, b: {x: 'test'}, c: 3, x: 'test'},
-                    expect: {a: 1, b: {x: 'carrot'}, c: 3, x: 'carrot'}
-                },
-                {
-                    input: {a: 1, b: [{x: 'test'}, {x: 'test'}, {x: 'test'}], c: 3, x: 'test'},
-                    expect: {a: 1, b: [{x: 'carrot'}, {x: 'carrot'}, {x: 'carrot'}], c: 3, x: 'carrot'}
-                }
-            ];
-
-            tests.forEach(test => {
-                const processed = JSON.parse(JSON.stringify(test.input)); //take deep copy
-                uut.objectKeyFinder(processed, 'x', cb);    //process it
-                expect(processed, `Expected ${JSON.stringify(test.expect)} but got ${JSON.stringify(processed)}`).to.deep.equal(test.expect);
+    describe('getListOfSchemaFiles()', () => {
+        it('loads files matching glob of **/*.schema.json', () => {
+            return uut.getListOfSchemaFiles().then(schemaFilesFound => {
+                const expectedSchemaFilePaths = expectedSchemas.map(x => path.resolve(__dirname, x));
+                expect(schemaFilesFound).to.have.members(expectedSchemaFilePaths);
             });
         });
     });
+
+    describe('LOADED_SCHEMAS', () => {
+        it('should contain the list of expected schemas', () => {
+            const expectedSchemaKeys = expectedSchemas.map(x => require('./loader').prefixSchemaId(x));
+            expect(Object.keys(uut.LOADED_SCHEMAS)).to.have.members(expectedSchemaKeys);
+        });
+    });
+
+    describe('getAjvInstance()', () => {
+        it('gives an ajv instance with all schemas loaded', () => {
+            const testInst = uut.getAjvInstance();
+
+            const expectedSchemaKeys = expectedSchemas.map(x => require('./loader').prefixSchemaId(x));
+            expectedSchemaKeys.forEach(schemaId => {
+                expect(testInst.getSchema(schemaId), `Missing schema ${schemaId}`).to.not.be.undefined;     //eslint-disable-line no-unused-expressions
+            });
+        });
+    });
+
 });
