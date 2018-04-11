@@ -58,6 +58,7 @@ module.exports = {
             "error",
             { "allowEmptyReject": true }
         ],
+        "quotes": "off", //So I can just copy JSON objects in
         "semi": "error",
         "semi-spacing": "error",
         "semi-style": ["error", "last"],
@@ -93,7 +94,6 @@ module.exports = {
         "keyword-spacing": "off",
         "line-comment-position": "off",
         "linebreak-style": "off",
-        "lines-around-comment": "error",
         "lines-around-directive": "error",
         "max-depth": "error",
         "max-len": "off",
@@ -203,9 +203,7 @@ module.exports = {
         "prefer-spread": "error",
         "prefer-template": "error",
         "quote-props": "off",
-        "quotes": "off",
         "radix": "error",
-        "require-await": "error",
         "require-jsdoc": "off",
         "rest-spread-spacing": "error",
         "sort-imports": "error",

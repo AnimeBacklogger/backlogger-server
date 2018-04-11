@@ -1,0 +1,111 @@
+[
+    {
+        "name": "Chrolo",
+        "malVerified": true,
+        "malInformation": {
+            "username": "Chrolo",
+            "profileUrl": "myanimelist.net/users/Chrolo",
+            "friends": [
+                {
+                    "username": "KarenApparently",
+                    "profileUrl": "myanimelist.net/users/KarenApparently"
+                }
+            ]
+        },
+        "signIn":{
+            "hash": "$2a$08$0D/fyF94xH71oOaP/RrDTun8s2656E5en6rktKZYtd6VddRWMr5Nq",
+            "twitterUser": "@ChroloSan",
+            "twitterToken": "someTokenHere"
+        },
+        "backlog": [
+            {
+                "animeName": "Nichijou",
+                "malAnimeId": 10165,
+                "personalScore": 10,
+                "recommendations": [
+                    {
+                        "name": "KarenApparently",
+                        "backLoggerName": "KarenApparently",
+                        "score": 8,
+                        "comment": "Seems like something you'd like"
+                    },
+                    {
+                        "name": "guest1234",
+                        "score": 6
+                    }
+                ]
+            },
+            {
+                "animeName": "Punch Line",
+                "malAnimeId": 28617,
+                "personalScore": 7,
+                "recommendations": [
+                    {
+                        "name": "KarenApparently",
+                        "backLoggerName": "KarenApparently",
+                        "score": 10,
+                        "comment": "Litterally the best show in the world"
+                    },
+                    {
+                        "name": "guest1234",
+                        "score": 1,
+                        "comment": "pants offend me"
+                    }
+                ]
+            },
+            {
+                "animeName": "Darling in the FranXX",
+                "malAnimeId": 35849,
+                "recommendations": [
+                    {
+                        "name": "KarenApparently",
+                        "backLoggerName": "KarenApparently",
+                        "score": 7,
+                        "comment": "[I'm desperately hoping other people like this too]"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "Goshi",
+        "malVerified": false,
+        "malInformation": {
+            "username": "goshinbi",
+            "profileUrl": "myanimelist.net/users/goshinbi",
+            "friends": [
+                {
+                    "username": "KarenApparently",
+                    "profileUrl": "myanimelist.net/users/KarenApparently"
+                },
+                {
+                    "username": "Chrolo",
+                    "profileUrl": "myanimelist.net/users/Chrolo"
+                }
+            ]
+        },
+        "signIn":{
+            "hash": "$2a$08$ySh3TxZ7mX0J2V.mr2RrF.m7VLnqFmgHfX9cDSGwndonQ8XrjkvE."
+        },
+        "backlog": [
+            {
+                "animeName": "Nichijou",
+                "malAnimeId": 10165,
+                "personalScore": 10,
+                "recommendations": [
+                    {
+                        "name": "Chrolo",
+                        "backLoggerName": "Chrolo",
+                        "score": 10,
+                        "comment": "It's really sugoi Oniichan"
+                    }
+                ]
+            },
+            {
+                "animeName": "Yuru Yuri",
+                "malAnimeId": 10495,
+                "personalScore": 8
+            }
+        ]
+    }
+]

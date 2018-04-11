@@ -16,7 +16,6 @@ const testSchemaStub = {
     '@noCallThru': true
 };
 
-
 const uut = proxyquire('./index.js', {
     [TEST_SCHEMA_STUB_NAME]: testSchemaStub
 });
