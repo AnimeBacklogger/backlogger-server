@@ -1,7 +1,8 @@
 /* globals describe it beforeEach*/
+/*eslint max-lines: "off"*/ //disable max lines because it's a test file
 
 //Set process env for less bcrypt rounds
-process.env.BCRYPT_ROUNDS=1;
+process.env.BCRYPT_ROUNDS=1;    //eslint-disable-line no-process-env
 
 // Load modules
 const {expect} = require('chai');
@@ -22,7 +23,8 @@ describe('/data/users.js', () => {
             'getUserBacklog',
             'getRecommendationsCreatedByUser',
             'setUserPassword',
-            'addUser'
+            'addUser',
+            'addRecommendation'
         ];
         expect(Object.keys(users)).to.have.members(expectedMethods);
     });
@@ -320,5 +322,92 @@ describe('/data/users.js', () => {
             }));
         });
 
+    });
+
+    describe('addRecommendation()', () => {
+        beforeEach(() => {
+            dbStubs.data = [
+                {
+                    name: "test",
+                    backlog: [
+                        {
+                            animeName: 'ExistingAnime',
+                            malAnimeId: 1337
+                        }
+                    ]
+                }
+            ];
+            dbStubs.getData = () => dbStubs.data;
+        });
+
+        const defaultRecommendation = {
+            name: 'bob',
+            score: 5
+        };
+
+        it('returns a promise', () => {
+            expect(users.addRecommendation('test', 12, defaultRecommendation)).to.be.instanceOf(Promise);
+        });
+
+        it('rejects with `UserNotFoundError` if targeted user does not exist', () => {
+            return users.addRecommendation('testNonKnown', 1, defaultRecommendation)
+                .then(
+                    () => Promise.reject(new Error('Should have rejected')),
+                    rejection => {
+                        expect(rejection, rejection).to.be.instanceOf(UserNotFoundError);
+                    }
+                );
+        });
+
+        it('adds the anime to users backlog if it doesn\'t exist', () => {
+            const newShowIdentifiers = [
+                404,
+                'newShow'
+            ];
+            return Promise.all(
+                newShowIdentifiers.map(id => {
+                    const expectedField = typeof id === 'number' ? 'malAnimeId' : 'animeName';
+                    return users.addRecommendation('test', id, defaultRecommendation)
+                        .then(() => {
+                            return users.getUserInfoByName('test').then(userData => {
+                                const backlogIndex = userData.backlog.findIndex(x => x[expectedField] === id);
+                                expect(backlogIndex, `Expected anime with  ${expectedField}=${id} in user's backlog`).to.not.equal(-1);
+                                expect(userData.backlog[backlogIndex].recommendations).to.have.members([defaultRecommendation]);
+                            });
+                        });
+                })
+            );
+        });
+
+        it('adds recomendation to users backlog entry from an AnimeName (non-number showId)', () => {
+            const showId = 'ExistingAnime';
+
+            return users.getUserInfoByName('test').then(originalUserData => {
+                const backlogIndex = originalUserData.backlog.findIndex(x => x.animeName === showId);
+                expect(backlogIndex, `Expected anime with  animeName:${showId} in user's backlog to exist before test`).to.not.equal(-1);
+                return users.addRecommendation('test', showId, defaultRecommendation)
+                    .then(() => {
+                        return users.getUserInfoByName('test').then(userData => {
+                            expect(backlogIndex, `Expected anime with  animeName:${showId} in user's backlog`).to.not.equal(-1);
+                            expect(userData.backlog[backlogIndex].recommendations).to.have.members([defaultRecommendation]);
+                        });
+                    });
+            });
+        });
+
+        it('adds recomendation to users backlog entry from an malAnimeId (numeric showId)', () => {
+            const showId = 1337;
+            return users.getUserInfoByName('test').then(originalUserData => {
+                const backlogIndex = originalUserData.backlog.findIndex(x => x.malAnimeId === showId);
+                expect(backlogIndex, `Expected anime with  malAnimeId:${showId} in user's backlog to exist before test`).to.not.equal(-1);
+                return users.addRecommendation('test', showId, defaultRecommendation)
+                    .then(() => {
+                        return users.getUserInfoByName('test').then(userData => {
+                            expect(backlogIndex, `Expected anime with  malAnimeId:${showId} in user's backlog`).to.not.equal(-1);
+                            expect(userData.backlog[backlogIndex].recommendations).to.have.members([defaultRecommendation]);
+                        });
+                    });
+            });
+        });
     });
 });

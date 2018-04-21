@@ -3,7 +3,7 @@
 // If you swap out backends (mongodb/mysql/postGres/redis) or scrapers, then this is were you change
 // code to point to the new access methods.
 const bcrypt = require('bcrypt');
-const { UserNotFoundError, NonUniqueUserError} = require('./dataErrors');
+const {UserNotFoundError, NonUniqueUserError} = require('./dataErrors');
 const schemas = require('./schemas');
 
 const db = require('./db');
@@ -77,7 +77,7 @@ async function setUserPassword(user, oldPass, newPass){
             });
         }
         return false;
-        
+
     });
 }
 
@@ -85,7 +85,7 @@ async function setUserPassword(user, oldPass, newPass){
 // Creators
 //------------------------------
 /**
- * 
+ *
  * @param {Object} userDataObject an object defining a user, as in ../schemas/user/index.schema.json
  */
 async function addUser(userDataObject){
@@ -104,12 +104,42 @@ async function addUser(userDataObject){
     return true;
 }
 
+async function addRecommendation(username, showIdentifier, recommendation) {
+    //Check user exists
+    if (db.getData().findIndex(x => x.name === username) === -1) {
+        throw new UserNotFoundError(`User '${username}' not found`);
+    }
+    //TODO: validate recommendation data
+
+    //Add recommendation (adding show listing if necessary)
+    const index = db.getData().findIndex(x => x.name === username);
+    const showIdField = typeof showIdentifier === 'number' ? 'malAnimeId' : 'animeName'; //Type of find depends on data type
+    let showIndex = db.data[index].backlog.findIndex(show => show[showIdField] === showIdentifier);
+    if(showIndex === -1) {
+        //Show not on user backlog, so make instance of it:
+        db.data[index].backlog.push({
+            [showIdField]: showIdentifier
+        });
+        showIndex = db.data[index].backlog.length -1;   // it now exists on the end :)
+    }
+
+    if(!db.data[index].backlog[showIndex].recommendations){
+        db.data[index].backlog[showIndex].recommendations = [];
+    }
+
+    //TODO: Check if user has already made recommendation and ...(?)
+
+    db.data[index].backlog[showIndex].recommendations.push(recommendation);
+
+    return true;
+}
 
 //--------------------------------
 // Module Exports:
 //--------------------------------
 module.exports = {
     addUser,
+    addRecommendation,
     getRecommendationsCreatedByUser,
     getUserInfoByName,
     getUserBacklog,

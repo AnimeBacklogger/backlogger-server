@@ -1,4 +1,4 @@
-/* globals describe it before*/
+/* globals describe it*/
 const {expect} = require('chai');
 const proxyquire = require('proxyquire');
 const path = require('path');
@@ -17,7 +17,7 @@ const expectedSchemas = [
 ];
 
 describe('/data/schemas/index.js', () => {
-    
+
     describe('getListOfSchemaFiles()', () => {
         it('loads files matching glob of **/*.schema.json', () => {
             return uut.getListOfSchemaFiles().then(schemaFilesFound => {
@@ -50,7 +50,8 @@ describe('/data/schemas/index.js', () => {
             expectedSchemas.forEach(schemaId => {
                 expect(uut.getSchemaById(schemaId), `Missing schema ${schemaId}`).to.not.be.undefined;     //eslint-disable-line no-unused-expressions
                 const expectedSchemaShape = uut.LOADED_SCHEMAS[require('./loader').prefixSchemaId(schemaId)];
-                expect(uut.getSchemaById(schemaId), `Schema ${schemaId} was wrong`).to.be.deep.equal(expectedSchemaShape);            });
+                expect(uut.getSchemaById(schemaId), `Schema ${schemaId} was wrong`).to.be.deep.equal(expectedSchemaShape);
+            });
         });
     });
 });
