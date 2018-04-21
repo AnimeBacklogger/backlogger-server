@@ -7,6 +7,8 @@ const {UserNotFoundError} = require('./dataErrors');
 
 const db = require('./db');
 
+const BCRYPT_ROUNDS = Number.parseInt(process.env.BCRYPT_ROUNDS, 10) || 5;
+
 /**
 @param name the name of the user.
 @return <UserObject> Details of the user, as seen in the user schema area
@@ -56,6 +58,28 @@ async function getRecommendationsCreatedByUser(name){
     }, []);
 }
 
+//------------------------------
+// Setters
+//------------------------------
+/*
+    Function to change a user's password
+*/
+async function setUserPassword(user, oldPass, newPass){
+    return validateUserLogin(user, oldPass).then(res => {
+        if(res){
+            console.log(`encrypting with ${BCRYPT_ROUNDS} (${typeof BCRYPT_ROUNDS}) rounds of bcrypt`);
+            return bcrypt.hash(newPass, BCRYPT_ROUNDS).then(nHash => {
+                //Set new hash:
+                const ind =  db.data.findIndex(userData => userData.name === user);
+                db.data[ind].signIn.hash = nHash;
+                //return true
+                return true;
+            });
+        }
+        return false;
+
+    });
+}
 //--------------------------------
 // Module Exports:
 //--------------------------------
@@ -63,5 +87,6 @@ module.exports = {
     getUserInfoByName,
     validateUserLogin,
     getUserBacklog,
-    getRecommendationsCreatedByUser
+    getRecommendationsCreatedByUser,
+    setUserPassword
 };
