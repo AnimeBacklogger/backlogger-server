@@ -1,7 +1,7 @@
 class UserNotFoundError extends Error {}
-class NonUniqueUser extends Error {}
+class NonUniqueUserError extends Error {}
 
 module.exports = {
-    NonUniqueUser,
+    NonUniqueUserError,
     UserNotFoundError
 };

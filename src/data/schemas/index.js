@@ -70,9 +70,17 @@ function getAjvInstance(){
     return ajv;
 }
 
+function getSchemaById(id){
+    return LOADED_SCHEMAS[loader.prefixSchemaId(id)];
+}
+
+//Auto load on module startup
+loadSchemas();
+
 module.exports= {
     getAjvInstance,
     getListOfSchemaFiles,
     loadSchemas,
-    LOADED_SCHEMAS
+    LOADED_SCHEMAS,
+    getSchemaById
 };

@@ -11,7 +11,7 @@ const users = proxyquire('./users', {
     './db': dbStubs
 });
 const bcrypt = require('bcrypt');
-const {UserNotFoundError} = require('./dataErrors');
+const {UserNotFoundError, NonUniqueUserError} = require('./dataErrors');
 
 describe('/data/users.js', () => {
 
@@ -21,7 +21,8 @@ describe('/data/users.js', () => {
             'validateUserLogin',
             'getUserBacklog',
             'getRecommendationsCreatedByUser',
-            'setUserPassword'
+            'setUserPassword',
+            'addUser'
         ];
         expect(Object.keys(users)).to.have.members(expectedMethods);
     });
@@ -107,12 +108,12 @@ describe('/data/users.js', () => {
                 });
         });
         /*/ //TODO: Change to an error if non-unique user:
-        it('rejects with `NonUniqueUser` if multiple users are found', ()=>{
+        it('rejects with `NonUniqueUserError` if multiple users are found', ()=>{
             return users.getUserInfoByName('test3')
                 .then(
                     () => Promise.reject(new Error('Should have rejected')),
                     rejection => {
-                        expect(rejection, rejection).to.be.instanceOf(NonUniqueUser);
+                        expect(rejection, rejection).to.be.instanceOf(NonUniqueUserError);
                     }
                 );
         });
@@ -253,17 +254,71 @@ describe('/data/users.js', () => {
                     // check password has changed
                     return users.getUserInfoByName('test').then(after => {
                         expect(after.signIn.hash, 'Password should have been changed').to.not.equal(prevHash);
-                        return bcrypt.compare(newPass, after.signIn.hash).then(x => expect(x, 'Comparison of new hash to new pass failed').to.be.true);
+                        // check new password validates correctly
+                        return bcrypt.compare(newPass, after.signIn.hash)
+                            .then(x => expect(x, 'Comparison of new hash to new pass failed').to.be.true);
                     });
                 });
             });
-
-            // Check get user data
-            // attempt password change
-            // check for rejection
-            // check password has changed
-            // check new password validates correctly
-
         });
+    });
+
+    describe('addUser()', () => {
+        beforeEach(() => {
+            dbStubs.data = [
+                {
+                    name: "test"
+                }
+            ];
+            dbStubs.getData = () => dbStubs.data;
+        });
+
+        const createValidUser = (overrides) => {
+            return Object.assign({}, {
+                name: 'bob',
+                signIn: {
+                    hash: "something"
+                }
+            }, overrides);
+        };
+
+        it('returns a promise', () => {
+            expect(users.addUser(createValidUser())).to.be.instanceOf(Promise);
+        });
+
+        it('rejects with `NonUniqueUserError` if user already exists', () => {
+            return users.addUser(createValidUser({name: 'test'})).then(
+                () => Promise.reject(new Error('Should have rejected')),
+                rejection => {
+                    expect(rejection, rejection).to.be.instanceOf(NonUniqueUserError);
+                }
+            );
+        });
+
+        it('Adds the user and resolve `true`', () => {
+            const expectedNewObject = createValidUser({name: 'addTest'});
+            return users.addUser(expectedNewObject).then(res => {
+                expect(res, 'Should have resolved as `true`').to.equal(true);
+                return users.getUserInfoByName(expectedNewObject.name).then(data => {
+                    expect(data).to.deep.equal(expectedNewObject);
+                });
+            });
+        });
+
+        it('rejects with `TypeError` if userData is invalid', () => {
+            const invalidObjects = [
+                {name: 5},
+                {}
+            ];
+
+            return Promise.all(invalidObjects.map(obj => {
+                return users.addUser(obj).then(
+                    () => Promise.reject(new Error(`Should have rejected. Test data was ${JSON.stringify(obj)}`)),
+                    rejection => {
+                        expect(rejection, rejection).to.be.instanceOf(TypeError);
+                    });
+            }));
+        });
+
     });
 });

@@ -3,7 +3,8 @@
 // If you swap out backends (mongodb/mysql/postGres/redis) or scrapers, then this is were you change
 // code to point to the new access methods.
 const bcrypt = require('bcrypt');
-const {UserNotFoundError} = require('./dataErrors');
+const { UserNotFoundError, NonUniqueUserError} = require('./dataErrors');
+const schemas = require('./schemas');
 
 const db = require('./db');
 
@@ -62,12 +63,11 @@ async function getRecommendationsCreatedByUser(name){
 // Setters
 //------------------------------
 /*
-    Function to change a user's password
+Function to change a user's password
 */
 async function setUserPassword(user, oldPass, newPass){
     return validateUserLogin(user, oldPass).then(res => {
         if(res){
-            console.log(`encrypting with ${BCRYPT_ROUNDS} (${typeof BCRYPT_ROUNDS}) rounds of bcrypt`);
             return bcrypt.hash(newPass, BCRYPT_ROUNDS).then(nHash => {
                 //Set new hash:
                 const ind =  db.data.findIndex(userData => userData.name === user);
@@ -77,16 +77,42 @@ async function setUserPassword(user, oldPass, newPass){
             });
         }
         return false;
-
+        
     });
 }
+
+//------------------------------
+// Creators
+//------------------------------
+/**
+ * 
+ * @param {Object} userDataObject an object defining a user, as in ../schemas/user/index.schema.json
+ */
+async function addUser(userDataObject){
+    //Check userData is correct format
+    const ajvInst = schemas.getAjvInstance();
+    const validator = ajvInst.compile(schemas.getSchemaById('user/index.schema.json'));
+    if(!validator(userDataObject)){
+        throw new TypeError(JSON.stringify(validator.errors));
+    }
+    //Verify user doesn't already exist:
+    if(db.getData().findIndex(x => x.name === userDataObject.name) !== -1){
+        throw new NonUniqueUserError(`A user under the name '${userDataObject.name}' already exists in the database.`);
+    }
+    //Add user to database:
+    db.data.push(userDataObject);
+    return true;
+}
+
+
 //--------------------------------
 // Module Exports:
 //--------------------------------
 module.exports = {
-    getUserInfoByName,
-    validateUserLogin,
-    getUserBacklog,
+    addUser,
     getRecommendationsCreatedByUser,
-    setUserPassword
+    getUserInfoByName,
+    getUserBacklog,
+    setUserPassword,
+    validateUserLogin
 };

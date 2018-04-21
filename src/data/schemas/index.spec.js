@@ -12,14 +12,12 @@ const expectedSchemas = [
     'user/index.schema.json',
     'user/mal.schema.json',
     'user/signIn.schema.json',
-    'user/twitterSignIn.schema.json'
+    'user/twitterSignIn.schema.json',
+    'user/recomendationsMade.schema.json'
 ];
 
 describe('/data/schemas/index.js', () => {
-    before(() => {
-        return uut.loadSchemas();
-    });
-
+    
     describe('getListOfSchemaFiles()', () => {
         it('loads files matching glob of **/*.schema.json', () => {
             return uut.getListOfSchemaFiles().then(schemaFilesFound => {
@@ -47,4 +45,12 @@ describe('/data/schemas/index.js', () => {
         });
     });
 
+    describe('getSchemaById()', () => {
+        it('returns a schema by it\'s un-prefixed id', () => {
+            expectedSchemas.forEach(schemaId => {
+                expect(uut.getSchemaById(schemaId), `Missing schema ${schemaId}`).to.not.be.undefined;     //eslint-disable-line no-unused-expressions
+                const expectedSchemaShape = uut.LOADED_SCHEMAS[require('./loader').prefixSchemaId(schemaId)];
+                expect(uut.getSchemaById(schemaId), `Schema ${schemaId} was wrong`).to.be.deep.equal(expectedSchemaShape);            });
+        });
+    });
 });
