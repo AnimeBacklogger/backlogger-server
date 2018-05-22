@@ -7,6 +7,7 @@ const {UserNotFoundError, NonUniqueUserError} = require('./dataErrors');
 const schemas = require('./schemas');
 
 const db = require('./db');
+const {aql} = require('arangojs');
 
 const BCRYPT_ROUNDS = Number.parseInt(process.env.BCRYPT_ROUNDS, 10) || 5;
 
@@ -15,18 +16,76 @@ const BCRYPT_ROUNDS = Number.parseInt(process.env.BCRYPT_ROUNDS, 10) || 5;
 @return <UserObject> Details of the user, as seen in the user schema area
 */
 async function getUserInfoByName(name){
-    const data = db.getData().find(user => user.name===name);
-    if(!data){
-        throw new UserNotFoundError(`User ${name} not found`);
-    }
-    return data;
+    return db.query(aql`
+        FOR u IN users 
+            FILTER u.name==${name} 
+            LET auth = (FOR a IN 1..1 OUTBOUND u userAuth RETURN a) 
+            LET friends = (FOR f,e IN 1..1 ANY u friendsWith RETURN {friendInfo: f, edge: e})
+            LET backlog = (FOR b,e IN 1..1 OUTBOUND u hasInBacklog RETURN {show:b, edge: e})
+            LET recommendations = (
+                FOR r,e IN 1..1 INBOUND u recommendationTo
+                RETURN {
+                    rec: r, 
+                    edge:e,
+                    show: (FOR s IN 1..1 OUTBOUND r recommendationFor RETURN s)[0],
+                    user: (FOR ru IN 1..1 OUTBOUND r recommendationFrom RETURN ru)[0]
+                }
+            )
+            RETURN {
+                user: u, 
+                auth: auth,
+                friends: friends,
+                backlog: backlog,
+                recommendations: recommendations
+            }
+    `).then(cursor => cursor.all()).then(data => {
+        //First result or bust
+        if(data.length === 1){
+            return data[0];
+        } else if (data.length > 1){
+            return Promise.reject(
+                new NonUniqueUserError(`Multiple users found for name ${name}: ${JSON.stringify(data.map(x => x.user._id))}`)
+            );
+        }
+        return Promise.reject(new UserNotFoundError(`User ${name} not found`));
+    }).then(data => {
+        /*/
+        //Transform Data
+        return Object.assign(
+            {},
+            data.user,
+            {
+                friends: data.friends,
+                backlog: data.backlog
+            }
+        );
+        /*/ //Passthrough
+        return data;
+        //*/
+
+    });
 }
 
 /*
     A function to validate user login against username+Hash stored in database.
 */
 async function validateUserLogin(name, password){
-    return getUserInfoByName(name).then(data => bcrypt.compare(password, data.signIn.hash));
+    return db.query(aql`
+        FOR u IN users 
+            FILTER u.name==${name} 
+            FOR a,e IN 1..1 OUTBOUND u userAuth 
+                RETURN {authInfo: a, edge: e}
+    `).then(cursor => cursor.all()).then(data => {
+        //First result or bust
+        if (data.length === 1) {
+            return data[0].authInfo;
+        } else if (data.length > 1) {
+            return Promise.reject(
+                new NonUniqueUserError(`Multiple users and/or Auth objects found for name ${name}: ${JSON.stringify(data)}`)
+            );
+        }
+        return Promise.reject(new UserNotFoundError(`User ${name} not found`));
+    }).then(data => bcrypt.compare(password, data.hash));
 }
 
 /*

@@ -62,6 +62,8 @@ module.exports = {
         "semi": "error",
         "semi-spacing": "error",
         "semi-style": ["error", "last"],
+        "wrap-iife": "off",
+        "wrap-regex": "warn",
         "yoda": "off",
         /*****************************************************/
         // The line of "I've checked and approved this rule" //
@@ -234,8 +236,6 @@ module.exports = {
             "never"
         ],
         "vars-on-top": "error",
-        "wrap-iife": "error",
-        "wrap-regex": "error",
         "yield-star-spacing": "error",
     }
 };

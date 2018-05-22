@@ -31,7 +31,6 @@
             "type":"object",
             "properties": {
                 "name": { "type": "string", "description": "name of user making recommendation"},
-                "backLoggerName":  { "type": "string", "description": "recommenders BackLogger username (for verification)"},
                 "score": {"type": "integer", "minimum": 0,"maximum": 10,"description": "score between 0-10 of how much they think the user will enjoy the show"},
                 "comment": {"type": "string", "maxLength": 240, "description": "A short comment about the recommendation"}
             },
