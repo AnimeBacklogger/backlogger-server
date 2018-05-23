@@ -1,3 +1,13 @@
+/**
+ * This is a wrapper so that stubs can easily implement the `cursor` class wrapper for
+ * results from `arangoDb.query()`
+ * @param {Object} data the data to be returned by the query
+ * @returns {Promise} A promise of a cursor object that will return the supplied data.
+ */
+module.exports.cursorWrapper = (data) => Promise.resolve({
+    all: () => data
+});
+
 module.exports.getShowsResult = () => [
     {
         "show": {
@@ -93,6 +103,24 @@ module.exports.getRecommendationsResult = () => [
             "_id": "users/21067",
             "_rev": "_W2huzfu--_",
             "name": "Begna112"
+        }
+    }
+];
+
+module.exports.getAuthResult = () => [
+    {
+        "authInfo": {
+            "_key": "21056",
+            "_id": "authInformation/21056",
+            "_rev": "_W2huzfm--B",
+            "hash": "$2a$08$ySh3TxZ7mX0J2V.mr2RrF.m7VLnqFmgHfX9cDSGwndonQ8XrjkvE."
+        },
+        "edge": {
+            "_key": "21169",
+            "_id": "userAuth/21169",
+            "_from": "users/21063",
+            "_to": "authInformation/21056",
+            "_rev": "_W2huzhi--_"
         }
     }
 ];

@@ -13,6 +13,7 @@ const users = proxyquire('./users', {
 });
 const bcrypt = require('bcrypt');
 const {UserNotFoundError, NonUniqueUserError} = require('./dataErrors');
+const databaseTestData = require('../../test/data/databaseData');
 
 describe('/data/users.js', () => {
 
@@ -31,15 +32,8 @@ describe('/data/users.js', () => {
 
     describe('validateUserLogin()', () => {
         beforeEach(() => {
-            dbStubs.getData = () => {
-                return [
-                    {
-                        name: "test",
-                        signIn: {
-                            hash: '$2a$04$SRvT3uSabpCoNWDcrle6f.fI1Z4OOngDpeIc7QGpo8tWrd7Ey3C5.'    //hash of 'password123' with 1 round
-                        }
-                    }
-                ];
+            dbStubs.query = () => {
+                return Promise.resolve(databaseTestData.cursorWrapper(databaseTestData.getAuthResult()));
             };
         });
 
@@ -60,11 +54,30 @@ describe('/data/users.js', () => {
         });
 
         it('rejects with `UserNotFoundError` if user is not known', () => {
+            //Query would return empty if use not found
+            dbStubs.query = () => Promise.resolve(databaseTestData.cursorWrapper([]));
+
             return users.validateUserLogin('nonExistant', 'password123')
                 .then(
                     () => Promise.reject(new Error('Should have rejected')),
                     rejection => {
                         expect(rejection, rejection).to.be.instanceOf(UserNotFoundError);
+                    }
+                );
+        });
+
+        it('rejects with `NonUniqueUserError` if multiple users exist under that name', () => {
+            //Query would return with length >1
+            dbStubs.query = () => Promise.resolve(databaseTestData.cursorWrapper([
+                ...databaseTestData.getAuthResult(),
+                ...databaseTestData.getAuthResult()
+            ]));
+
+            return users.validateUserLogin('nonExistant', 'password123')
+                .then(
+                    () => Promise.reject(new Error('Should have rejected')),
+                    rejection => {
+                        expect(rejection, rejection).to.be.instanceOf(NonUniqueUserError);
                     }
                 );
         });
