@@ -51,6 +51,7 @@ module.exports = {
         "max-params": ["warn", 5],
         "no-loop-func": "warn",
         "no-multiple-empty-lines": ["error", {max:1, maxEOF:1}],
+        "no-underscore-dangle": "off",  //we have arrango fields we need to use.
         "no-var": "error",
         "no-warning-comments": "warn",
         "prefer-const": "error",
@@ -176,7 +177,6 @@ module.exports = {
         "no-throw-literal": "error",
         "no-trailing-spaces": "error",
         "no-undef-init": "error",
-        "no-underscore-dangle": "error",
         "no-unmodified-loop-condition": "error",
         "no-unneeded-ternary": "error",
         "no-unused-expressions": "error",

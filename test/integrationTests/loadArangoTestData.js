@@ -140,10 +140,7 @@ const initData = {
 };
 
 const { Database } = require('arangojs');
-const DATABASE_CONFIG = {
-    host: '192.168.13.37',
-    dbName: 'backlogger'
-};
+const DATABASE_CONFIG = require('../../src/data/db/config');
 
 const db = (new Database({
     url: `http://${DATABASE_CONFIG.host}:8529`
@@ -157,7 +154,7 @@ Promise.all(Object.keys(initData.verts).map(collectionName => {
     const collection = db.collection(collectionName);
     DATA.verts[collectionName] = [];
     return collection.truncate().then(() => Promise.all(
-        verts.map((row, index) => collection.save(row).then(x => {DATA.verts[collectionName][index] = x._id}))
+        verts.map((row, index) => collection.save(row).then(x => {DATA.verts[collectionName][index] = x._id;}))
     ));
 })).then(() => {
     //Add the edges
