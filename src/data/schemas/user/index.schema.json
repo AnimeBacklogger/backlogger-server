@@ -22,8 +22,7 @@
                         {"$ref": "./twitterSignIn.schema.json"}
                     ]
                 }
-            },
-            "required": [ "signIn" ]
+            }
         },
         {
             "type": "object",

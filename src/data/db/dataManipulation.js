@@ -82,8 +82,22 @@ function flattenBacklogAndRecommendations(shows, recommendations){
     return filterDbFields(result);
 }
 
+/**
+ * 
+ * @param {Array} dbData the database results
+ */
+function flattenFriends(dbData){
+    return dbData.map(row => {
+        return JSON.parse(JSON.stringify({  // to clear any properties with undefined values
+            name: row.friendInfo.name,
+            malImport: row.edge.malImport
+        }));
+    });
+}
+
 module.exports= {
     filterDbFields,
     flattenBacklogAndRecommendations,
-    flattenBacklogData
+    flattenBacklogData,
+    flattenFriends
 };

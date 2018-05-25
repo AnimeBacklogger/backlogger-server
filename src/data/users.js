@@ -8,6 +8,7 @@ const schemas = require('./schemas');
 
 const db = require('./db');
 const {aql} = require('arangojs');
+const { filterDbFields, flattenBacklogData, flattenBacklogAndRecommendations, flattenFriends} = require('./db/dataManipulation');
 
 const BCRYPT_ROUNDS = Number.parseInt(process.env.BCRYPT_ROUNDS, 10) || 5;
 
@@ -19,7 +20,6 @@ async function getUserInfoByName(name){
     return db.query(aql`
         FOR u IN users 
             FILTER u.name==${name} 
-            LET auth = (FOR a IN 1..1 OUTBOUND u userAuth RETURN a) 
             LET friends = (FOR f,e IN 1..1 ANY u friendsWith RETURN {friendInfo: f, edge: e})
             LET backlog = (FOR b,e IN 1..1 OUTBOUND u hasInBacklog RETURN {show:b, edge: e})
             LET recommendations = (
@@ -33,7 +33,6 @@ async function getUserInfoByName(name){
             )
             RETURN {
                 user: u, 
-                auth: auth,
                 friends: friends,
                 backlog: backlog,
                 recommendations: recommendations
@@ -49,20 +48,17 @@ async function getUserInfoByName(name){
         }
         return Promise.reject(new UserNotFoundError(`User ${name} not found`));
     }).then(data => {
-        /*/
-        //Transform Data
-        return Object.assign(
+        const backlog = flattenBacklogAndRecommendations(data.backlog, data.recommendations);
+        const friends = flattenFriends(data.friends);
+
+        return filterDbFields(Object.assign(
             {},
             data.user,
             {
-                friends: data.friends,
-                backlog: data.backlog
+                backlog,
+                friends
             }
-        );
-        /*/ //Passthrough
-        return data;
-        //*/
-
+        ));
     });
 }
 
@@ -92,9 +88,12 @@ async function validateUserLogin(name, password){
     Function to get a user's backlog (MAL list + backlog data merged and sorted.)
 */
 async function getUserBacklog(name){
-    //TODO: scrape from MAL
-    //TODO: merge in results from database
-    return getUserInfoByName(name).then(x => x.backlog);
+    return db.query(aql`
+        FOR u IN users 
+            FILTER u.name==${name} 
+            FOR b,e IN 1..1 OUTBOUND u hasInBacklog 
+                RETURN {show:b, edge: e}
+    `).then(data => flattenBacklogData(data));
 }
 
 /*
@@ -127,13 +126,13 @@ Function to change a user's password
 async function setUserPassword(user, oldPass, newPass){
     return validateUserLogin(user, oldPass).then(res => {
         if(res){
-            return bcrypt.hash(newPass, BCRYPT_ROUNDS).then(nHash => {
-                //Set new hash:
-                const ind =  db.data.findIndex(userData => userData.name === user);
-                db.data[ind].signIn.hash = nHash;
-                //return true
-                return true;
-            });
+            return bcrypt.hash(newPass, BCRYPT_ROUNDS)
+                .then(nHash => db.query(aql`
+                    FOR u IN users 
+                        FILTER u.name==${user} 
+                        FOR a,e IN 1..1 OUTBOUND u userAuth 
+                            UPDATE a WITH {hash: ${nHash}} IN authInformation
+                `)).then(() => true);
         }
         return false;
 

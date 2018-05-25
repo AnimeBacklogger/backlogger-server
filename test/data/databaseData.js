@@ -124,3 +124,52 @@ module.exports.getAuthResult = () => [
         }
     }
 ];
+
+module.exports.getUserResult = () => [
+    {
+        "user": {
+            "_key": "21063",
+            "_id": "users/21063",
+            "_rev": "_W2huzfq--B",
+            "name": "Chrolo"
+        },
+        "friends": [
+            {
+                "friendInfo": {
+                    "_key": "21067",
+                    "_id": "users/21067",
+                    "_rev": "_W2huzfu--_",
+                    "name": "Begna112"
+                },
+                "edge": {
+                    "_key": "21132",
+                    "_id": "friendsWith/21132",
+                    "_from": "users/21067",
+                    "_to": "users/21063",
+                    "_rev": "_W2huzhC--_"
+                }
+            }
+        ],
+        "backlog": [
+            {
+                "show": {
+                    "_key": "21047",
+                    "_id": "shows/21047",
+                    "_rev": "_W2huzfW--_",
+                    "name": "Punch Line",
+                    "malAnimeId": 28617,
+                    "malUrl": ""
+                },
+                "edge": {
+                    "_key": "21159",
+                    "_id": "hasInBacklog/21159",
+                    "_from": "users/21063",
+                    "_to": "shows/21047",
+                    "_rev": "_W2huzhW--B",
+                    "personalScore": 8
+                }
+            }
+        ],
+        "recommendations": []
+    }
+];
