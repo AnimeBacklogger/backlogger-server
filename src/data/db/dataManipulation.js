@@ -98,9 +98,22 @@ function flattenFriends(dbData){
     });
 }
 
+function flattenUsersRecommendations(userReccomendationRows){
+    return userReccomendationRows.map(row => {
+        return {
+            animeName: row.show.name,
+            malAnimeId: row.show.malAnimeId,
+            score: row.rec.score,
+            comment: row.rec.comment,
+            to: row.to.name
+        }
+    });
+}
+
 module.exports= {
     filterDbFields,
     flattenBacklogAndRecommendations,
     flattenBacklogData,
-    flattenFriends
+    flattenFriends,
+    flattenUsersRecommendations
 };

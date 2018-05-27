@@ -8,7 +8,7 @@ const schemas = require('./schemas');
 
 const db = require('./db');
 const {aql} = require('arangojs');
-const { filterDbFields, flattenBacklogData, flattenBacklogAndRecommendations, flattenFriends} = require('./db/dataManipulation');
+const { filterDbFields, flattenBacklogData, flattenBacklogAndRecommendations, flattenFriends, flattenUsersRecommendations} = require('./db/dataManipulation');
 
 // FIXME: Create configuration variable for this.
 const BCRYPT_ROUNDS = Number.parseInt(process.env.BCRYPT_ROUNDS, 10) || 5;
@@ -123,20 +123,23 @@ async function getUserBacklog(name){
 */
 async function getRecommendationsCreatedByUser(name){
     //TODO:
-    return db.getData().reduce((acc, user) => {
-        //Check each user's backlog
-        user.backlog.forEach(backlogItem => {
-            if(backlogItem.recommendations){
-                //check each recommendation for whether it was made by user
-                backlogItem.recommendations.forEach(rec => {
-                    if(rec.name === name || rec.backLoggerName === name){
-                        acc.push(rec);
+
+    return db.query(aql`
+        FOR u IN users 
+            FILTER u.name==${name}
+            RETURN {
+                name: u.name,
+                recs: (FOR r IN 1..1 INBOUND u recommendationFrom 
+                    RETURN {
+                        rec: r,
+                        show: (FOR s IN 1..1 OUTBOUND r recommendationFor RETURN s)[0],
+                        to: (FOR s IN 1..1 OUTBOUND r recommendationTo RETURN s)[0]
                     }
-                });
+                )
             }
-        });
-        return acc;
-    }, []);
+    `).then(cursor => cursor.all()).then(data => checkUserCount(data, name))
+        .then(({recs}) => flattenUsersRecommendations(recs))
+        .then(data => filterDbFields(data, name));
 }
 
 //------------------------------

@@ -126,10 +126,25 @@ describe('/data/users.js', () => {
     describe('getRecommendationsCreatedByUser()', () => {
 
         it('returns an array of recommendations made by the user', () => {
-            const expectedRecs= [];
+            const expectedRecs= [
+                {
+                    animeName: "Nichijou",
+                    comment: "It's really sugoi Oniichan",
+                    malAnimeId: 10165,
+                    score: 10,
+                    to: "Begna112"
+                },
+                {
+                    animeName: "Nichijou",
+                    comment: "It's really sugoi Oniichan",
+                    malAnimeId: 10165,
+                    score: 10,
+                    to: "Goshi"
+                }
+            ];
 
             return users.getRecommendationsCreatedByUser('Chrolo').then(recs => {
-                expect(recs).to.have.members(expectedRecs);
+                expect(recs).to.have.deep.members(expectedRecs);
                 expect(recs.length).to.equal(expectedRecs.length);
             });
         });

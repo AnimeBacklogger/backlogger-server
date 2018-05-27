@@ -177,11 +177,11 @@ describe('/data/users.js', () => {
                 databaseTestData.cursorWrapper([{user: 'test', backlog: databaseTestData.getShowsResult()}])
             );
         });
-
+        
         it('returns a promise', () => {
             expect(users.getUserBacklog('test').catch(e => e)).to.be.instanceOf(Promise);
         });
-
+        
         it('rejects with `UserNotFoundError` if user is not known', () => {
             dbStubs.query = () => Promise.resolve(
                 databaseTestData.cursorWrapper([])
@@ -194,7 +194,7 @@ describe('/data/users.js', () => {
                     }
                 );
         });
-
+        
         it('returns the user\'s backlog as an array', () => {
             return users.getUserBacklog('test').then(backlog => {
                 expect(backlog).to.be.instanceOf(Array);
@@ -215,7 +215,7 @@ describe('/data/users.js', () => {
                 ]);
             });
         });
-
+        
         it('returns array of backlog data that validates against the backlog data schema', () => {
             return users.getUserBacklog('Chrolo').then(backlog => {
                 const backlogDataSchemaValidator = dataSchemas.getAjvInstance().compile(dataSchemas.getSchemaById('backlog/basic.schema.json'));
@@ -227,50 +227,53 @@ describe('/data/users.js', () => {
             });
         });
     });
-
+    
     describe('getRecommendationsCreatedByUser()', () => {
-        const basicBacklogObj = {
-            "animeName": "Nichijou",
-            "malAnimeId": 10165
-        };
-        const testRecs = [
-            {name: 'Needle', data: 'a'},
-            {name: 'NotNeedle', backLoggerName: "Needle", data: 'b'},
-            {name: 'Needle', backLoggerName: "Bosh", data: 'c'}
-        ];
-
         beforeEach(() => {
-            dbStubs.getData = () => {
-                return [
-                    {
-                        name: 'test',
-                        backlog: [
-                            Object.assign({}, basicBacklogObj, {recommendations: [testRecs[0]]}),
-                            Object.assign({}, basicBacklogObj),
-                            Object.assign({}, basicBacklogObj, {recommendations: [{name: 'bob', data: 'x'}, testRecs[1]]}),
-                            Object.assign({}, basicBacklogObj, {recommendations: [testRecs[2], {name: 'bob', data: 'x'}]})
-                        ]
-                    }
-                ];
-            };
+            dbStubs.query = () => Promise.resolve(
+                databaseTestData.cursorWrapper([{user: 'test', recs: databaseTestData.getUserRecommendationsResult()}])
+            );
         });
 
         it('returns a promise', () => {
             expect(users.getRecommendationsCreatedByUser('test')).to.be.instanceOf(Promise);
         });
 
-        it('returns an array of recommendations made by the user (matching both `name` and `backLoggerName`)', () => {
-            return Promise.all([
-                //Test user who's made recs
-                users.getRecommendationsCreatedByUser('Needle').then(recs => {
-                    expect(recs).to.have.members(testRecs);
-                }),
-                //Test user with no recs
-                users.getRecommendationsCreatedByUser('SilentBob').then(recs => {
-                    expect(recs).to.be.instanceOf(Array);
-                    expect(recs.length).to.equal(0);
-                })
-            ]);
+        it('returns an array of recommendations made by the user', () => {
+            return users.getRecommendationsCreatedByUser('Needle').then(recs => {
+                expect(recs).to.have.deep.members([
+                    {
+                        animeName: "Nichijou",
+                        comment: "It's really sugoi Oniichan",
+                        malAnimeId: 10165,
+                        score: 10,
+                        to: "Begna112"
+                    },
+                    {
+                        animeName: "Nichijou",
+                        comment: "It's really sugoi Oniichan",
+                        malAnimeId: 10165,
+                        score: 10,
+                        to: "Goshi"
+                    },
+                    {
+                        animeName: "Corey in the house",
+                        comment: "Oh shit waddup",
+                        malAnimeId: 404,
+                        score: 5,
+                        to: "Goshi"
+                    }
+                ]);
+            });
+        });
+
+        it('returns array of recommendations data that validates against the `recommendationsMade` data schema', () => {
+            return users.getRecommendationsCreatedByUser('test').then(recommendations => {
+                const userRecommendationsValidator = dataSchemas.getAjvInstance().compile(dataSchemas.getSchemaById('user/recomendationsMade.schema.json'));
+                const result = userRecommendationsValidator(recommendations);
+                const schemaErrors = JSON.stringify(userRecommendationsValidator.errors, null, '  ');
+                expect(result, `Errors validating data against schema:\n${schemaErrors}.`).to.be.true;  // eslint-disable-line no-unused-expressions
+            });
         });
     });
 

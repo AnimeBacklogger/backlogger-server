@@ -169,3 +169,74 @@ module.exports.getUserResult = () => [
         "recommendations": []
     }
 ];
+
+module.exports.getUserRecommendationsResult = () =>  [
+    {
+        "rec": {
+            "_key": "62978",
+            "_id": "recommendations/62978",
+            "_rev": "_W4Mw_4u--D",
+            "score": 10,
+            "comment": "It's really sugoi Oniichan"
+        },
+        "show": {
+            "_key": "62965",
+            "_id": "shows/62965",
+            "_rev": "_W4Mw_4q--B",
+            "name": "Nichijou",
+            "malAnimeId": 10165,
+            "malUrl": "https://myanimelist.net/anime/10165/Nichijou"
+        },
+        "to": {
+            "_key": "62952",
+            "_id": "users/62952",
+            "_rev": "_W4Mw_4m--_",
+            "name": "Begna112"
+        }
+    },
+    {
+        "rec": {
+            "_key": "62982",
+            "_id": "recommendations/62982",
+            "_rev": "_W4Mw_4y--_",
+            "score": 10,
+            "comment": "It's really sugoi Oniichan"
+        },
+        "show": {
+            "_key": "62965",
+            "_id": "shows/62965",
+            "_rev": "_W4Mw_4q--B",
+            "name": "Nichijou",
+            "malAnimeId": 10165,
+            "malUrl": "https://myanimelist.net/anime/10165/Nichijou"
+        },
+        "to": {
+            "_key": "62955",
+            "_id": "users/62955",
+            "_rev": "_W4Mw_4m--B",
+            "name": "Goshi"
+        }
+    },
+    {
+        "rec": {
+            "_key": "62982",
+            "_id": "recommendations/62982",
+            "_rev": "_W4Mw_4y--_",
+            "score": 5,
+            "comment": "Oh shit waddup"
+        },
+        "show": {
+            "_key": "62965",
+            "_id": "shows/62965",
+            "_rev": "_W4Mw_4q--B",
+            "name": "Corey in the house",
+            "malAnimeId": 404
+        },
+        "to": {
+            "_key": "62955",
+            "_id": "users/62955",
+            "_rev": "_W4Mw_4m--B",
+            "name": "Goshi"
+        }
+    }
+];
