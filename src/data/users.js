@@ -3,14 +3,37 @@
 // If you swap out backends (mongodb/mysql/postGres/redis) or scrapers, then this is were you change
 // code to point to the new access methods.
 const bcrypt = require('bcrypt');
-const {UserNotFoundError, NonUniqueUserError} = require('./dataErrors');
+const { UserNotFoundError, NonUniqueUserError, UserPasswordNotSetError} = require('./dataErrors');
 const schemas = require('./schemas');
 
 const db = require('./db');
 const {aql} = require('arangojs');
 const { filterDbFields, flattenBacklogData, flattenBacklogAndRecommendations, flattenFriends} = require('./db/dataManipulation');
 
+// FIXME: Create configuration variable for this.
 const BCRYPT_ROUNDS = Number.parseInt(process.env.BCRYPT_ROUNDS, 10) || 5;
+
+/**
+ * Takes in an array and gives you back the first result.
+ * But if there's 0 results, throws a `UserNotFoundError`
+ * and if there's >1 results, throws a `NonUniqueUserError`
+ * @param {Array} userDataRows rows of data, where there should only be 1 if the user was uniquely identified
+ * @param {string} userName the name of the user searched for
+ * @throws {NonUniqueUserError}
+ * @throws {UserNotFoundError}
+ * @returns {Object} First result (if not throwing)
+ */
+function checkUserCount(userDataRows, userName){
+    //First result or bust
+    if (userDataRows.length === 1) {
+        return userDataRows[0];
+    } else if (userDataRows.length > 1) {
+        return Promise.reject(
+            new NonUniqueUserError(`Multiple users found for name '${userName}': ${JSON.stringify(userDataRows.map(x => x.user._id))}`)
+        );
+    }
+    return Promise.reject(new UserNotFoundError(`User '${userName}' not found`));
+}
 
 /**
 @param name the name of the user.
@@ -37,29 +60,20 @@ async function getUserInfoByName(name){
                 backlog: backlog,
                 recommendations: recommendations
             }
-    `).then(cursor => cursor.all()).then(data => {
-        //First result or bust
-        if(data.length === 1){
-            return data[0];
-        } else if (data.length > 1){
-            return Promise.reject(
-                new NonUniqueUserError(`Multiple users found for name ${name}: ${JSON.stringify(data.map(x => x.user._id))}`)
-            );
-        }
-        return Promise.reject(new UserNotFoundError(`User ${name} not found`));
-    }).then(data => {
-        const backlog = flattenBacklogAndRecommendations(data.backlog, data.recommendations);
-        const friends = flattenFriends(data.friends);
+    `).then(cursor => cursor.all()).then(data => checkUserCount(data, name))
+        .then(data => {
+            const backlog = flattenBacklogAndRecommendations(data.backlog, data.recommendations);
+            const friends = flattenFriends(data.friends);
 
-        return filterDbFields(Object.assign(
-            {},
-            data.user,
-            {
-                backlog,
-                friends
-            }
-        ));
-    });
+            return filterDbFields(Object.assign(
+                {},
+                data.user,
+                {
+                    backlog,
+                    friends
+                }
+            ));
+        });
 }
 
 /*
@@ -68,23 +82,24 @@ async function getUserInfoByName(name){
 async function validateUserLogin(name, password){
     return db.query(aql`
         FOR u IN users 
-            FILTER u.name==${name} 
-            FOR a,e IN 1..1 OUTBOUND u userAuth 
-                RETURN a
-    `).then(cursor => cursor.all()).then(data => {
-        //First result or bust
-        if (data.length === 1) {
-            return data[0].hash;
-        } else if (data.length > 1) {
-            return Promise.reject(
-                new NonUniqueUserError(`Multiple users and/or Auth objects found for name ${name}: ${JSON.stringify(data)}`)
-            );
-        }
-        return Promise.reject(new UserNotFoundError(`User ${name} not found`));
-    }).then(hash => {
-        console.log(`Comparing '${password}' and '${hash}'`);
-        return bcrypt.compare(password, hash);
-    });
+            FILTER u.name==${name}
+            RETURN {
+                user: u.name,
+                auth: (FOR a,e IN 1..1 OUTBOUND u userAuth 
+                    RETURN a
+                )
+            }
+    `).then(cursor => cursor.all())
+        .then(data => checkUserCount(data, name))
+        .then(({auth}) => {
+            // Fix index with a password hash:
+            const index =  auth.findIndex(authData => authData.hash);
+            if(index !== -1){
+                return auth[0].hash;
+            }
+            return Promise.reject(new UserPasswordNotSetError(`No password found for ${name}`));
+        })
+        .then(hash => bcrypt.compare(password, hash));
 }
 
 /*
@@ -94,9 +109,13 @@ async function getUserBacklog(name){
     return db.query(aql`
         FOR u IN users 
             FILTER u.name==${name} 
-            FOR b,e IN 1..1 OUTBOUND u hasInBacklog 
-                RETURN {show:b, edge: e}
-    `).then(cursor => cursor.all()).then(data => flattenBacklogData(data));
+            RETURN {
+                name: u.name,
+                backlog: (FOR b,e IN 1..1 OUTBOUND u hasInBacklog 
+                    RETURN {show:b, edge: e}
+                )
+            }
+    `).then(cursor => cursor.all()).then(data => checkUserCount(data, name)).then(data => flattenBacklogData(data.backlog));
 }
 
 /*

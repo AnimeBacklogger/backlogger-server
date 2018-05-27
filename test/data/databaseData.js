@@ -107,21 +107,17 @@ module.exports.getRecommendationsResult = () => [
     }
 ];
 
-module.exports.getAuthResult = () => [
+module.exports.getAuthResult = (user= 'test') => [
     {
-        "authInfo": {
-            "_key": "21056",
-            "_id": "authInformation/21056",
-            "_rev": "_W2huzfm--B",
-            "hash": "$2a$08$ySh3TxZ7mX0J2V.mr2RrF.m7VLnqFmgHfX9cDSGwndonQ8XrjkvE."
-        },
-        "edge": {
-            "_key": "21169",
-            "_id": "userAuth/21169",
-            "_from": "users/21063",
-            "_to": "authInformation/21056",
-            "_rev": "_W2huzhi--_"
-        }
+        user,
+        auth: [
+            {
+                "_key": "21056",
+                "_id": "authInformation/21056",
+                "_rev": "_W2huzfm--B",
+                "hash": "$2a$08$ySh3TxZ7mX0J2V.mr2RrF.m7VLnqFmgHfX9cDSGwndonQ8XrjkvE."
+            }
+        ]
     }
 ];
 

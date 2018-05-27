@@ -1,5 +1,7 @@
-const DB_HOST= '192.168.13.37';
-const DB_NAME= 'backlogger';
+const config = require('../../util/configFileHandler').getConfig().arango;
+
+const DB_HOST = config.host;
+const DB_NAME = config.database;
 
 const VERT_COLLECTIONS = [
     'users',

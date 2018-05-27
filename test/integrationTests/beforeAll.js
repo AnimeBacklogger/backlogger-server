@@ -1,35 +1,32 @@
 /*global before */
+const path = require('path');
 
+// Load the integration test configuration into the system config:
+const configLoader = require('../../src/util/configFileHandler');
+configLoader.loadSettingsFromFile(path.resolve(__dirname, './integrationTestConfig.json'));
+
+const Logger = require('../../src/util/Logger');
+Logger.setLogLevel(configLoader.getConfig().logger.level, true);
 const { Database } = require('arangojs');
 const DATABASE_CONFIG = require('../../src/data/db/config');
 
-const TEST_DATABASE_CONFIG = Object.assign(
-    JSON.parse(JSON.stringify(DATABASE_CONFIG)),
-    {
-        dbName: `${DATABASE_CONFIG.dbName}_test`
-    }
-);
-
 // connect to the database.
 const db = (new Database({
-    url: `http://${TEST_DATABASE_CONFIG.host}:8529`
-})).useDatabase(TEST_DATABASE_CONFIG.dbName);
+    url: `http://${DATABASE_CONFIG.host}:8529`
+})).useDatabase(DATABASE_CONFIG.dbName);
 
 before(async () => {
     console.log(''.padEnd(25, '-'));
     console.log('Setting up Database');
+    Logger.debug('Integration Test Database Config', JSON.stringify(DATABASE_CONFIG, null, '  '));
     console.log(''.padEnd(25, '-'));
     
     // Setup the collections
-    await require('../../src/data/db/setupFunctions')(TEST_DATABASE_CONFIG);
-    
+    await require('../../src/data/db/setupFunctions')(DATABASE_CONFIG);
     
     //Load in the integration test data.
     await require('../data/loadArangoTestData')(db);
-    
-    //Print out auth info
-    await db.query('FOR a IN authInformation RETURN a').then(c => c.all()).then(console.log);
-    console.log(''.padEnd(25, '-'));
+
 });
 
 module.exports= {

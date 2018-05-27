@@ -9,7 +9,7 @@
     "scripts": {
         "lint": "eslint --color ./src/**/*.js",
         "lint:fix": "eslint --color ./src/**/*.js --fix",
-        "test": "mocha -c src/**/*.spec.js",
+        "test": "mocha -r ./test/unitTest_before.js -c src/**/*.spec.js",
         "test:integration": "mocha -c test/integrationTests/*.js"
     },
     "keywords": [
@@ -25,7 +25,8 @@
         "express": "^4.16.3",
         "express-session": "^1.15.6",
         "request": "^2.85.0",
-        "request-promise": "^4.2.2"
+        "request-promise": "^4.2.2",
+        "yargs": "^11.0.0"
     },
     "devDependencies": {
         "chai": "^4.1.2",

@@ -16,7 +16,7 @@ const {aql}= require('arangojs');
 
 describe('/data/users.js', () => {
 
-    describe.only('validateUserLogin()', () => {
+    describe('validateUserLogin()', () => {
         const testUser = 'Chrolo';
         const password = 'password123';
 
@@ -103,15 +103,9 @@ describe('/data/users.js', () => {
                     {
                         animeName: "Punch Line",
                         malAnimeId: 28617,
+                        personalScore: 8,
                         recommendations: [],
                         malUrl: ""
-                    },
-                    {
-                        animeName: "Nichijou",
-                        malAnimeId: 10165,
-                        malUrl: "https://myanimelist.net/anime/10165/Nichijou",
-                        personalScore: 10,
-                        recommendations: []
                     }
                 ]);
             });
@@ -141,7 +135,7 @@ describe('/data/users.js', () => {
         });
     });
 
-    describe.only('setUserPassword()', () => {
+    describe('setUserPassword()', () => {
         const testUser = 'Chrolo';
         const oldPass = 'password123';
         const newPass = 'newPass';
@@ -213,7 +207,6 @@ describe('/data/users.js', () => {
                 }
             }, overrides);
         };
-
 
         it('rejects with `NonUniqueUserError` if user already exists', () => {
             return users.addUser(createValidUser({ name: 'Chrolo' })).then(

@@ -16,8 +16,7 @@ class Spy {
     }
 }
 
-
 module.exports = {
     Spy,
-    rand,
+    rand
 };

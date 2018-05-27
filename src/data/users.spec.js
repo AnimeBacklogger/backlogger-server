@@ -11,7 +11,6 @@ const dbStubs = {};
 const users = proxyquire('./users', {
     './db': dbStubs
 });
-const bcrypt = require('bcrypt');
 const {UserNotFoundError, NonUniqueUserError} = require('./dataErrors');
 const databaseTestData = require('../../test/data/databaseData');
 const {Spy} = require('../../test/utils');
@@ -175,7 +174,7 @@ describe('/data/users.js', () => {
     describe('getUserBacklog()', () => {
         beforeEach(() => {
             dbStubs.query = () => Promise.resolve(
-                databaseTestData.cursorWrapper(databaseTestData.getShowsResult())
+                databaseTestData.cursorWrapper([{user: 'test', backlog: databaseTestData.getShowsResult()}])
             );
         });
 
@@ -184,6 +183,9 @@ describe('/data/users.js', () => {
         });
 
         it('rejects with `UserNotFoundError` if user is not known', () => {
+            dbStubs.query = () => Promise.resolve(
+                databaseTestData.cursorWrapper([])
+            );
             return users.getUserBacklog('testNonKnown')
                 .then(
                     () => Promise.reject(new Error('Should have rejected')),
@@ -275,39 +277,26 @@ describe('/data/users.js', () => {
     describe('setUserPassword()', () => {
 
         beforeEach(() => {
-            dbStubs.data = [
-                {
-                    name: "test",
-                    signIn: {
-                        hash: '$2a$04$SRvT3uSabpCoNWDcrle6f.fI1Z4OOngDpeIc7QGpo8tWrd7Ey3C5.'    //hash of 'password123' with 1 round
-                    }
-                }
-            ];
-            dbStubs.getData = () => dbStubs.data;
+            dbStubs.query = () => {
+                return Promise.resolve(databaseTestData.cursorWrapper(databaseTestData.getAuthResult()));
+            };
         });
 
         it('returns a promise', () => {
             expect(users.setUserPassword('test', 'test', 'test')).to.be.instanceOf(Promise);
         });
 
-        it('returns false on a password set if old password does not match (and does not change the password)', () => {
-            // Check get user data
-            return users.getUserInfoByName('test').then(originalData => {
-                const prevHash = originalData.signIn.hash;
-
-                // attempt password change
-                return users.setUserPassword('test', 'notOriginal', 'newPass').then(res => {
-                    // check response was false
-                    expect(res, 'setUserPassword should return false if passwords did not match.').to.equal(false);
-                    // check password has not changed
-                    return users.getUserInfoByName('test').then(after => {
-                        expect(after.signIn.hash, 'Password should not have been changed').to.equal(prevHash);
-                    });
-                });
+        it('returns false on a password set if old password does not match', () => {
+            return users.setUserPassword('test', 'notOriginal', 'newPass').then(res => {
+                // check response was false
+                expect(res, 'setUserPassword should return false if passwords did not match.').to.equal(false);
             });
         });
 
         it('rejects if user does not exist', () => {
+            dbStubs.query = () => {
+                return Promise.resolve(databaseTestData.cursorWrapper([]));
+            };
             // attempt password change
             return users.setUserPassword('nonExistant', 'notOriginal', 'newPass').then(res => {
                 // check for rejection
@@ -316,39 +305,13 @@ describe('/data/users.js', () => {
                 return Promise.resolve();
             });
         });
-
-        it.skip('changes the stored hash correctly', () => {
-            //TODO: Move this to an integration test suite
-
-            // Check get user data
-            return users.getUserInfoByName('test').then(originalData => {
-                const prevHash = originalData.signIn.hash;
-                const newPass = 'newPass';
-
-                // attempt password change
-                return users.setUserPassword('test', 'password123', newPass).then(res => {
-                    // check response was false
-                    expect(res, 'setUserPassword should return true if password was changed.').to.equal(true);
-                    // check password has changed
-                    return users.getUserInfoByName('test').then(after => {
-                        expect(after.signIn.hash, 'Password should have been changed').to.not.equal(prevHash);
-                        // check new password validates correctly
-                        return bcrypt.compare(newPass, after.signIn.hash)
-                            .then(x => expect(x, 'Comparison of new hash to new pass failed').to.be.true);
-                    });
-                });
-            });
-        });
     });
 
     describe('addUser()', () => {
         beforeEach(() => {
-            dbStubs.data = [
-                {
-                    name: "test"
-                }
-            ];
-            dbStubs.getData = () => dbStubs.data;
+            dbStubs.query = () => {
+                return Promise.resolve(databaseTestData.cursorWrapper(databaseTestData.getAuthResult()));
+            };
         });
 
         const createValidUser = (overrides) => {
