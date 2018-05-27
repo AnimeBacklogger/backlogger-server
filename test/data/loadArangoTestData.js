@@ -47,10 +47,10 @@ const initData = {
         ],
         authInformation: [
             {   //Auth info for Chrolo
-                hash: "$2a$08$ySh3TxZ7mX0J2V.mr2RrF.m7VLnqFmgHfX9cDSGwndonQ8XrjkvE."    //password123
+                hash: "$2a$04$qhaM/V590g0OkDr1WPXNeuJcf/adDsN/WYg2J8y4LELbI5ynQfoxG"    // 'password123', 1 round
             },
             {   //Auth info for Goshi
-                hash: "$2a$08$ySh3TxZ7mX0J2V.mr2RrF.m7VLnqFmgHfX9cDSGwndonQ8XrjkvE."
+                hash: "$2a$04$qhaM/V590g0OkDr1WPXNeuJcf/adDsN/WYg2J8y4LELbI5ynQfoxG"
             }
         ]
     },
@@ -139,41 +139,28 @@ const initData = {
     }
 };
 
-const { Database } = require('arangojs');
-const DATABASE_CONFIG = require('../../src/data/db/config');
-
-const db = (new Database({
-    url: `http://${DATABASE_CONFIG.host}:8529`
-})).useDatabase(DATABASE_CONFIG.dbName);
-
-// A place to store the ids
-const DATA = {verts: {}, edges: {}};
-//Lets add the verts first
-Promise.all(Object.keys(initData.verts).map(collectionName => {
-    const verts = initData.verts[collectionName];
-    const collection = db.collection(collectionName);
-    DATA.verts[collectionName] = [];
-    return collection.truncate().then(() => Promise.all(
-        verts.map((row, index) => collection.save(row).then(x => {DATA.verts[collectionName][index] = x._id;}))
-    ));
-})).then(() => {
-    //Add the edges
-    return Promise.all(Object.keys(initData.edges).map(collectionName => {
-        const edges = initData.edges[collectionName];
-        const edgeCollection = db.collection(collectionName);
-        DATA.edges[collectionName] = [];
-        return edgeCollection.truncate().then(() => Promise.all(edges.map(row => {
-            row._from = eval(row._from);
-            row._to = eval(row._to);
-            console.log(`Loading '${JSON.stringify(row)}' from '${row._from}' to '${row._to}' into '${collectionName}'`);
-            return edgeCollection.save(row).then(x => DATA.edges[collectionName].push(x._id));
-        })));
-    }));
-}).then(() => {
-    console.log(JSON.stringify(DATA, null, '  '));
-}).catch(err => {
-    console.log('-------'.padStart(err.message.length, '-'));
-    console.error('ERROR: ', err.message);
-    console.log('-------'.padStart(err.message.length, '-'));
-    console.log('Processed results:', JSON.stringify(DATA, null, '  '));
-});
+module.exports = db => {
+    // A place to store the ids
+    const DATA = {verts: {}, edges: {}};
+    //Lets add the verts first
+    return Promise.all(Object.keys(initData.verts).map(collectionName => {
+        const verts = initData.verts[collectionName];
+        const collection = db.collection(collectionName);
+        DATA.verts[collectionName] = [];
+        return collection.truncate().then(() => Promise.all(
+            verts.map((row, index) => collection.save(row).then(x => {DATA.verts[collectionName][index] = x._id;}))
+        ));
+    })).then(() => {
+        //Add the edges
+        return Promise.all(Object.keys(initData.edges).map(collectionName => {
+            const edges = initData.edges[collectionName];
+            const edgeCollection = db.collection(collectionName);
+            DATA.edges[collectionName] = [];
+            return edgeCollection.truncate().then(() => Promise.all(edges.map(row => {
+                row._from = eval(row._from);
+                row._to = eval(row._to);
+                return edgeCollection.save(row).then(x => DATA.edges[collectionName].push(x._id));
+            })));
+        }));
+    }).then(() => DATA);
+};

@@ -70,18 +70,21 @@ async function validateUserLogin(name, password){
         FOR u IN users 
             FILTER u.name==${name} 
             FOR a,e IN 1..1 OUTBOUND u userAuth 
-                RETURN {authInfo: a, edge: e}
+                RETURN a
     `).then(cursor => cursor.all()).then(data => {
         //First result or bust
         if (data.length === 1) {
-            return data[0].authInfo;
+            return data[0].hash;
         } else if (data.length > 1) {
             return Promise.reject(
                 new NonUniqueUserError(`Multiple users and/or Auth objects found for name ${name}: ${JSON.stringify(data)}`)
             );
         }
         return Promise.reject(new UserNotFoundError(`User ${name} not found`));
-    }).then(data => bcrypt.compare(password, data.hash));
+    }).then(hash => {
+        console.log(`Comparing '${password}' and '${hash}'`);
+        return bcrypt.compare(password, hash);
+    });
 }
 
 /*
@@ -93,7 +96,7 @@ async function getUserBacklog(name){
             FILTER u.name==${name} 
             FOR b,e IN 1..1 OUTBOUND u hasInBacklog 
                 RETURN {show:b, edge: e}
-    `).then(data => flattenBacklogData(data));
+    `).then(cursor => cursor.all()).then(data => flattenBacklogData(data));
 }
 
 /*
@@ -162,15 +165,15 @@ async function addUser(userDataObject){
     return true;
 }
 
-async function addRecommendation(username, showIdentifier, recommendation) {
+async function addRecommendation(toUsername, fromUsername, showIdentifier, recommendation) {
     //Check user exists
-    if (db.getData().findIndex(x => x.name === username) === -1) {
-        throw new UserNotFoundError(`User '${username}' not found`);
+    if (db.getData().findIndex(x => x.name === toUsername) === -1) {
+        throw new UserNotFoundError(`User '${toUsername}' not found`);
     }
     //TODO: validate recommendation data
 
     //Add recommendation (adding show listing if necessary)
-    const index = db.getData().findIndex(x => x.name === username);
+    const index = db.getData().findIndex(x => x.name === toUsername);
     const showIdField = typeof showIdentifier === 'number' ? 'malAnimeId' : 'animeName'; //Type of find depends on data type
     let showIndex = db.data[index].backlog.findIndex(show => show[showIdField] === showIdentifier);
     if(showIndex === -1) {

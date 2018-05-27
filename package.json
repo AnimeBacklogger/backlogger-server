@@ -9,7 +9,8 @@
     "scripts": {
         "lint": "eslint --color ./src/**/*.js",
         "lint:fix": "eslint --color ./src/**/*.js --fix",
-        "test": "mocha -c src/**/*.spec.js"
+        "test": "mocha -c src/**/*.spec.js",
+        "test:integration": "mocha -c test/integrationTests/*.js"
     },
     "keywords": [
         "backlogger",

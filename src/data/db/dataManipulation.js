@@ -44,6 +44,9 @@ function mapDbShowToShow(dbShowData){
  * @returns {Array} a flattened array of data
  */
 function flattenBacklogData(dbShowResults){
+    if(!(dbShowResults instanceof Array)){
+        throw new TypeError(`Expected show results array, got '${typeof dbShowResults}'(${JSON.stringify(dbShowResults)})`);
+    }
     return dbShowResults.map(data => {
         const copy = mapDbShowToShow(data.show);
         if(data.edge.personalScore){

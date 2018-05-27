@@ -172,7 +172,7 @@ describe('/data/users.js', () => {
         });
     });
 
-    describe.only('getUserBacklog()', () => {
+    describe('getUserBacklog()', () => {
         beforeEach(() => {
             dbStubs.query = () => Promise.resolve(
                 databaseTestData.cursorWrapper(databaseTestData.getShowsResult())
@@ -196,9 +196,32 @@ describe('/data/users.js', () => {
         it('returns the user\'s backlog as an array', () => {
             return users.getUserBacklog('test').then(backlog => {
                 expect(backlog).to.be.instanceOf(Array);
-                expect(backlog).to.deep.equal([
-
+                expect(backlog).to.have.deep.members([
+                    {
+                        animeName: "Punch Line",
+                        malAnimeId: 28617,
+                        recommendations: [],
+                        malUrl: ""
+                    },
+                    {
+                        animeName: "Nichijou",
+                        malAnimeId: 10165,
+                        malUrl: "https://myanimelist.net/anime/10165/Nichijou",
+                        personalScore: 10,
+                        recommendations: []
+                    }
                 ]);
+            });
+        });
+
+        it('returns array of backlog data that validates against the backlog data schema', () => {
+            return users.getUserBacklog('Chrolo').then(backlog => {
+                const backlogDataSchemaValidator = dataSchemas.getAjvInstance().compile(dataSchemas.getSchemaById('backlog/basic.schema.json'));
+                backlog.forEach(backlogItem => {
+                    const result = backlogDataSchemaValidator(backlogItem);
+                    const schemaErrors = JSON.stringify(backlogDataSchemaValidator.errors, null, '  ');
+                    expect(result, `Errors validating data against schema:\n${schemaErrors}.`).to.be.true;  // eslint-disable-line no-unused-expressions
+                });
             });
         });
     });

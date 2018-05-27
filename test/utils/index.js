@@ -1,3 +1,5 @@
+const rand = require('./randData');
+
 class Spy {
     constructor(func){
         this.spiedFunc= func;
@@ -14,6 +16,8 @@ class Spy {
     }
 }
 
+
 module.exports = {
-    Spy
+    Spy,
+    rand,
 };
