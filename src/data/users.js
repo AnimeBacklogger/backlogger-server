@@ -5,6 +5,7 @@
 const bcrypt = require('bcrypt');
 const { UserNotFoundError, NonUniqueUserError, UserPasswordNotSetError} = require('./dataErrors');
 const schemas = require('./schemas');
+const Logger = require('../util/Logger');
 
 const db = require('./db');
 const {aql} = require('arangojs');
@@ -92,10 +93,12 @@ async function validateUserLogin(name, password){
     `).then(cursor => cursor.all())
         .then(data => checkUserCount(data, name))
         .then(({auth}) => {
-            // Fix index with a password hash:
-            const index =  auth.findIndex(authData => authData.hash);
-            if(index !== -1){
-                return auth[0].hash;
+            if(auth){
+                // Find index with a password hash:
+                const index =  auth.findIndex(authData => authData.hash);
+                if(index !== -1){
+                    return auth[index].hash;
+                }
             }
             return Promise.reject(new UserPasswordNotSetError(`No password found for ${name}`));
         })
@@ -149,7 +152,12 @@ async function getRecommendationsCreatedByUser(name){
 Function to change a user's password
 */
 async function setUserPassword(user, oldPass, newPass){
-    return validateUserLogin(user, oldPass).then(res => {
+    return validateUserLogin(user, oldPass).catch(err => {
+        if (err instanceof UserPasswordNotSetError){
+            return true;
+        }
+        return Promise.reject(err);
+    }).then(res => {
         if(res){
             return bcrypt.hash(newPass, BCRYPT_ROUNDS)
                 .then(nHash => db.query(aql`
@@ -179,11 +187,26 @@ async function addUser(userDataObject){
         throw new TypeError(JSON.stringify(validator.errors));
     }
     //Verify user doesn't already exist:
-    if(db.getData().findIndex(x => x.name === userDataObject.name) !== -1){
+    const data = await db.query(aql`FOR u IN users FILTER u.name==${userDataObject.name} RETURN u`).then(cursor => cursor.all());
+    if (data.length > 0){
         throw new NonUniqueUserError(`A user under the name '${userDataObject.name}' already exists in the database.`);
     }
-    //Add user to database:
-    db.data.push(userDataObject);
+    // -- Add the user vert -- //
+    const userVert = await db.collection('users').save({name: userDataObject.name, malVerified: userDataObject.malVerified}, {returnNew: true});
+
+    // -- Add the auth vert and edge --//
+    // hash the password
+    const signIn = userDataObject.signIn || {};
+    if (signIn.password){
+        Logger.debug('data/user::addUser', `Adding login information for ${userDataObject.name}`);
+        signIn.hash = await bcrypt.hash(signIn.password, BCRYPT_ROUNDS);
+        delete signIn.password;
+    } else {
+        Logger.info('data/user::addUser', `No initial login information presented when adding ${userDataObject.name}.`);
+    }
+    const authVert = await db.collection('authInformation').save(signIn, {returnNew: true});
+    await db.collection('userAuth').save({_from: userVert._id, _to: authVert._id});
+
     return true;
 }
 

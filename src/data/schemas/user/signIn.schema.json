@@ -11,6 +11,5 @@
             "description": "user email address for password resets",
             "format": "email"
         }
-    },
-    "required": ["hash"]
+    }
 }

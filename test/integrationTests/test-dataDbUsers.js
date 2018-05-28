@@ -165,7 +165,6 @@ describe('/data/users.js', () => {
         }
         
         it('returns false on a password set if old password does not match (and does not change the password)', () => {
-            
             return getExistingHash(testUser).then(prevHash => {
                 const incorrectPassword = rand.getRandAlphaNumChars(4);
 
@@ -192,7 +191,6 @@ describe('/data/users.js', () => {
         });
 
         it('changes the stored hash correctly', () => {
-            
             // Check existing hash
             return getExistingHash(testUser).then(prevHash => {
 
@@ -210,21 +208,27 @@ describe('/data/users.js', () => {
                 });
             });
         });
+
+        it('allows the password to be set if the user has not got one set', () => {
+            const emptyPasswordUser = 'emptyPasswordUser';
+            return users.setUserPassword(emptyPasswordUser, oldPass, newPass).then(res => {
+                // check response was false
+                expect(res, 'setUserPassword should return true if password was changed.').to.equal(true);
+                // check password has changed
+                return getExistingHash(emptyPasswordUser).then(afterHash => {
+                    expect(afterHash, 'Password should have been set').to.exist;    // eslint-disable-line no-unused-expressions
+                    // check new password validates correctly
+                    return bcrypt.compare(newPass, afterHash)
+                        .then(x => expect(x, 'Comparison of new hash to new pass failed').to.be.true);
+                });
+            });
+        });
     });
 
     describe('addUser()', () => {
 
-        const createValidUser = (overrides) => {
-            return Object.assign({}, {
-                name: 'bob',
-                signIn: {
-                    hash: "something"
-                }
-            }, overrides);
-        };
-
         it('rejects with `NonUniqueUserError` if user already exists', () => {
-            return users.addUser(createValidUser({ name: 'Chrolo' })).then(
+            return users.addUser({name: 'Chrolo'}).then(
                 () => Promise.reject(new Error('Should have rejected')),
                 rejection => {
                     expect(rejection, rejection).to.be.instanceOf(NonUniqueUserError);
@@ -234,13 +238,35 @@ describe('/data/users.js', () => {
 
         it('Adds the user and resolve `true`', () => {
             //new user with name of 'addUserTest_' + 6 random characters
-            const expectedNewObject = createValidUser({
-                name: `addUserTest_${rand.getRandAlphaNumChars(6)}`
-            });
-            return users.addUser(expectedNewObject).then(res => {
+            const addUserInfo = {
+                name: `addUserTest_${rand.getRandAlphaNumChars(6)}`,
+                signIn: {
+                    password: "testPassword"
+                }
+            };
+
+            const userInfoCopy = JSON.parse(JSON.stringify(addUserInfo));   //because the password setter will delete the password key when it's been used.
+
+            return users.addUser(addUserInfo).then(res => {
                 expect(res, 'Should have resolved as `true`').to.equal(true);
-                return users.getUserInfoByName(expectedNewObject.name).then(data => {
-                    expect(data).to.deep.equal(expectedNewObject);
+                return users.getUserInfoByName(userInfoCopy.name).then(data => {
+                    expect(data).to.deep.equal({
+                        name: userInfoCopy.name,
+                        // does not return sign in info
+                        backlog: [],    // adds blank backlog and friends
+                        friends: []
+                    });
+                    //then check that password was set:
+                    return db.query(aql`
+                        FOR u IN users 
+                            FILTER u.name==${userInfoCopy.name} 
+                            FOR a IN 1..1 OUTBOUND u userAuth 
+                                RETURN a
+                    `).then(cursor => cursor.all()).then(authData => authData[0].hash)
+                        .then(hash => bcrypt.compare(userInfoCopy.signIn.password, hash))
+                        .then(compareRes => {
+                            expect(compareRes, 'Password set did not match password given').to.be.true;    // eslint-disable-line no-unused-expressions
+                        });
                 });
             });
         });
@@ -255,7 +281,7 @@ describe('/data/users.js', () => {
                 return users.addUser(obj).then(
                     () => Promise.reject(new Error(`Should have rejected. Test data was ${JSON.stringify(obj)}`)),
                     rejection => {
-                        expect(rejection, rejection).to.be.instanceOf(TypeError);
+                        expect(rejection, `${rejection}. \nFor data: ${JSON.stringify(obj)}\n`).to.be.instanceOf(TypeError);
                     });
             }));
         });

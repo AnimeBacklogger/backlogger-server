@@ -308,12 +308,29 @@ describe('/data/users.js', () => {
                 return Promise.resolve();
             });
         });
+
+        it('allows the password to be set if the user has not got one set', () => {
+            dbStubs.query = () => {
+                //user found, but blank auth info
+                return Promise.resolve(databaseTestData.cursorWrapper([{auth:[{}]}]));
+            };
+            // attempt password change
+            return users.setUserPassword('test', 'test', 'test').then(res => {
+                expect(res, 'setUserPassword should return true if passwords was set.').to.equal(true);
+            });
+        });
     });
 
     describe('addUser()', () => {
         beforeEach(() => {
             dbStubs.query = () => {
                 return Promise.resolve(databaseTestData.cursorWrapper(databaseTestData.getAuthResult()));
+            };
+
+            dbStubs.collection = () => {
+                return {
+                    save: () => {return {_id:3};}
+                };
             };
         });
 
@@ -327,7 +344,7 @@ describe('/data/users.js', () => {
         };
 
         it('returns a promise', () => {
-            expect(users.addUser(createValidUser())).to.be.instanceOf(Promise);
+            expect(users.addUser(createValidUser()).catch(() => undefined)).to.be.instanceOf(Promise);
         });
 
         it('rejects with `NonUniqueUserError` if user already exists', () => {
@@ -339,13 +356,15 @@ describe('/data/users.js', () => {
             );
         });
 
-        it('Adds the user and resolve `true`', () => {
+        it('Adds the user and resolves `true`', () => {
+            // stub user not existing:
+            dbStubs.query = () => {
+                return Promise.resolve(databaseTestData.cursorWrapper([]));
+            };
+
             const expectedNewObject = createValidUser({name: 'addTest'});
             return users.addUser(expectedNewObject).then(res => {
                 expect(res, 'Should have resolved as `true`').to.equal(true);
-                return users.getUserInfoByName(expectedNewObject.name).then(data => {
-                    expect(data).to.deep.equal(expectedNewObject);
-                });
             });
         });
 

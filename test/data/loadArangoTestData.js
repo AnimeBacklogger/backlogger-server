@@ -9,6 +9,9 @@ const initData = {
             },
             {
                 name: "Goshi"
+            },
+            {
+                name: "emptyPasswordUser"
             }
         ],
         shows: [
@@ -49,9 +52,13 @@ const initData = {
             {   //Auth info for Chrolo
                 hash: "$2a$04$qhaM/V590g0OkDr1WPXNeuJcf/adDsN/WYg2J8y4LELbI5ynQfoxG"    // 'password123', 1 round
             },
+            {   //Auth info for Begna112
+                hash: "$2a$04$qhaM/V590g0OkDr1WPXNeuJcf/adDsN/WYg2J8y4LELbI5ynQfoxG"
+            },
             {   //Auth info for Goshi
                 hash: "$2a$04$qhaM/V590g0OkDr1WPXNeuJcf/adDsN/WYg2J8y4LELbI5ynQfoxG"
-            }
+            },
+            {}   //Auth info for emptyPasswordUser
         ]
     },
     edges: {
@@ -132,8 +139,16 @@ const initData = {
                 _to: "DATA.verts.authInformation[0]"
             },
             {
-                _from: "DATA.verts.users[2]", // user: Goshi
+                _from: "DATA.verts.users[1]", // user: Begna112
                 _to: "DATA.verts.authInformation[1]"
+            },
+            {
+                _from: "DATA.verts.users[2]", // user: Goshi
+                _to: "DATA.verts.authInformation[2]"
+            },
+            {
+                _from: "DATA.verts.users[3]", // user: emptyPasswordUser
+                _to: "DATA.verts.authInformation[3]"
             }
         ]
     }
