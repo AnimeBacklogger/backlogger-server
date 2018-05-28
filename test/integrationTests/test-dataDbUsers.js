@@ -291,15 +291,16 @@ describe('/data/users.js', () => {
     describe('addRecommendation()', () => {
         const testToUser = 'Begna112';
         const testFromUser = 'Chrolo';
-        const testShowId = 10165; //Nichijou
+        const testShowName = 'Nichijou';
+        const testShowMalId = 10165;
 
-        const defaultRecommendation = {
-            name: 'bob',
-            score: 5
-        };
+        const getDefaultRecommendation = () => ({
+            score: 5,
+            comment: `This rec was added during a test. ${rand.getRandAlphaNumChars(6)}`
+        });
 
         it('rejects with `UserNotFoundError` if targeted user does not exist', () => {
-            return users.addRecommendation('testNonKnown', testFromUser, testShowId, defaultRecommendation)
+            return users.addRecommendation('testNonKnown', testFromUser, testShowName, getDefaultRecommendation())
                 .then(
                     () => Promise.reject(new Error('Should have rejected')),
                     rejection => {
@@ -309,7 +310,7 @@ describe('/data/users.js', () => {
         });
 
         it('rejects with `UserNotFoundError` if from user does not exist', () => {
-            return users.addRecommendation(testToUser, 'testNonKnown', testShowId, defaultRecommendation)
+            return users.addRecommendation(testToUser, 'testNonKnown', testShowName, getDefaultRecommendation())
                 .then(
                     () => Promise.reject(new Error('Should have rejected')),
                     rejection => {
@@ -319,7 +320,7 @@ describe('/data/users.js', () => {
         });
 
         it('rejects with `ShowNotFoundError` if show does not exist on database.', () => {
-            return users.addRecommendation(testToUser, testFromUser, 0, defaultRecommendation)  // Show 0 does not exist
+            return users.addRecommendation(testToUser, testFromUser, 0, getDefaultRecommendation())  // Show 0 does not exist
                 .then(
                     () => Promise.reject(new Error('Should have rejected')),
                     rejection => {
@@ -328,5 +329,31 @@ describe('/data/users.js', () => {
                 );
         });
         
+        it('adds a recommendation for the show to the user', () => {
+            const newRec = getDefaultRecommendation();
+            return users.addRecommendation(testToUser, testFromUser, testShowName, newRec)
+                .then(res => {
+                    expect(res, 'addRecommendation() should return true if successful').to.be.true; // eslint-disable-line no-unused-expressions
+                    // Check recommendation exists:
+                    return db.query(aql`
+                        FOR r in recommendations
+                            FILTER r.comment == ${newRec.comment}
+                            RETURN {
+                                rec: r,
+                                to: (FOR u IN 1..1 OUTBOUND r recommendationTo RETURN u)[0],
+                                from: (FOR u IN 1..1 OUTBOUND r recommendationFrom RETURN u)[0],
+                                show: (FOR s IN 1..1 OUTBOUND r recommendationFor RETURN s)[0]
+                            }
+                    `).then(cursor => cursor.all())
+                        .then(recs => {
+                            expect(recs.length, 'Should be one recommendation found').to.equal(1);
+                            const rec = recs[0];
+                            expect(rec.to.name, 'Expect recommendation to be set "to" the correct user').to.equal(testToUser);
+                            expect(rec.from.name, 'Expect recommendation to be set "from" the correct user').to.equal(testFromUser);
+                            expect(rec.show.name, 'Expect recommendation to be set against the correct show').to.equal(testShowName);
+                            expect(rec.show.malAnimeId, 'Expect recommendation to be set against the correct show').to.equal(testShowMalId);
+                        });
+                });
+        });
     });
 });

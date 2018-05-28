@@ -11,7 +11,7 @@ const dbStubs = {};
 const users = proxyquire('./users', {
     './db': dbStubs
 });
-const {UserNotFoundError, NonUniqueUserError} = require('./dataErrors');
+const {UserNotFoundError, NonUniqueUserError, ShowNotFoundError} = require('./dataErrors');
 const databaseTestData = require('../../test/data/databaseData');
 const {Spy} = require('../../test/utils');
 const dataSchemas = require('./schemas');
@@ -387,31 +387,29 @@ describe('/data/users.js', () => {
 
     describe('addRecommendation()', () => {
         beforeEach(() => {
-            dbStubs.data = [
-                {
-                    name: "test",
-                    backlog: [
-                        {
-                            animeName: 'ExistingAnime',
-                            malAnimeId: 1337
-                        }
-                    ]
-                }
-            ];
-            dbStubs.getData = () => dbStubs.data;
+            dbStubs.query = () => Promise.resolve(databaseTestData.cursorWrapper([{ _id: 3 }]));
+            dbStubs.collection = () => {
+                return {
+                    save: () => ({_id: 3})
+                };
+            };
         });
 
+        const testFromUser='Bob';
+        const testToUser='Alice';
+        const testShowName='Eve';
         const defaultRecommendation = {
-            name: 'bob',
+            comment: 'How neat is that',
             score: 5
         };
 
         it('returns a promise', () => {
-            expect(users.addRecommendation('test', 12, defaultRecommendation)).to.be.instanceOf(Promise);
+            expect(users.addRecommendation(testFromUser, testToUser, testShowName, defaultRecommendation).catch(e => e)).to.be.instanceOf(Promise);
         });
 
         it('rejects with `UserNotFoundError` if targeted user does not exist', () => {
-            return users.addRecommendation('testNonKnown', 1, defaultRecommendation)
+            dbStubs.query = () => Promise.resolve(databaseTestData.cursorWrapper([]));
+            return users.addRecommendation(testFromUser, testToUser, testShowName, defaultRecommendation)
                 .then(
                     () => Promise.reject(new Error('Should have rejected')),
                     rejection => {
@@ -420,55 +418,61 @@ describe('/data/users.js', () => {
                 );
         });
 
-        it('adds the anime to users backlog if it doesn\'t exist', () => {
-            const newShowIdentifiers = [
-                404,
-                'newShow'
-            ];
-            return Promise.all(
-                newShowIdentifiers.map(id => {
-                    const expectedField = typeof id === 'number' ? 'malAnimeId' : 'animeName';
-                    return users.addRecommendation('test', id, defaultRecommendation)
-                        .then(() => {
-                            return users.getUserInfoByName('test').then(userData => {
-                                const backlogIndex = userData.backlog.findIndex(x => x[expectedField] === id);
-                                expect(backlogIndex, `Expected anime with  ${expectedField}=${id} in user's backlog`).to.not.equal(-1);
-                                expect(userData.backlog[backlogIndex].recommendations).to.have.members([defaultRecommendation]);
-                            });
-                        });
-                })
-            );
+        it('rejects with `UserNotFoundError` if "fromUser" does not exist', () => {
+            let c = 0;
+            dbStubs.query = () => {
+                c++;
+                if(c===2){    //2nd call is the fromUser call
+                    return Promise.resolve(databaseTestData.cursorWrapper([]));
+                }
+                return Promise.resolve(databaseTestData.cursorWrapper([{ _id: 3 }]));
+            };
+
+            return users.addRecommendation(testFromUser, testToUser, testShowName, defaultRecommendation)
+                .then(
+                    () => Promise.reject(new Error('Should have rejected')),
+                    rejection => {
+                        expect(rejection, rejection).to.be.instanceOf(UserNotFoundError);
+                    }
+                );
         });
 
-        it('adds recomendation to users backlog entry from an AnimeName (non-number showId)', () => {
-            const showId = 'ExistingAnime';
-
-            return users.getUserInfoByName('test').then(originalUserData => {
-                const backlogIndex = originalUserData.backlog.findIndex(x => x.animeName === showId);
-                expect(backlogIndex, `Expected anime with  animeName:${showId} in user's backlog to exist before test`).to.not.equal(-1);
-                return users.addRecommendation('test', showId, defaultRecommendation)
-                    .then(() => {
-                        return users.getUserInfoByName('test').then(userData => {
-                            expect(backlogIndex, `Expected anime with  animeName:${showId} in user's backlog`).to.not.equal(-1);
-                            expect(userData.backlog[backlogIndex].recommendations).to.have.members([defaultRecommendation]);
-                        });
-                    });
-            });
+        it('rejects with `ShowNotFoundError` if targeted show does not exist', () => {
+            let c = 0;
+            dbStubs.query = () => {
+                c++;
+                if (c === 3) {    // 3rd call is the getShowId call
+                    return Promise.resolve(databaseTestData.cursorWrapper([]));
+                }
+                return Promise.resolve(databaseTestData.cursorWrapper([{ _id: 3 }]));
+            };
+            return users.addRecommendation(testFromUser, testToUser, testShowName, defaultRecommendation)
+                .then(
+                    () => Promise.reject(new Error('Should have rejected')),
+                    rejection => {
+                        expect(rejection, rejection).to.be.instanceOf(ShowNotFoundError);
+                    }
+                );
         });
 
-        it('adds recomendation to users backlog entry from an malAnimeId (numeric showId)', () => {
-            const showId = 1337;
-            return users.getUserInfoByName('test').then(originalUserData => {
-                const backlogIndex = originalUserData.backlog.findIndex(x => x.malAnimeId === showId);
-                expect(backlogIndex, `Expected anime with  malAnimeId:${showId} in user's backlog to exist before test`).to.not.equal(-1);
-                return users.addRecommendation('test', showId, defaultRecommendation)
-                    .then(() => {
-                        return users.getUserInfoByName('test').then(userData => {
-                            expect(backlogIndex, `Expected anime with  malAnimeId:${showId} in user's backlog`).to.not.equal(-1);
-                            expect(userData.backlog[backlogIndex].recommendations).to.have.members([defaultRecommendation]);
-                        });
-                    });
-            });
+        it('creates the appropriate edges', () => {
+            let c = 0;
+            dbStubs.query = () => {
+                c++;
+                return Promise.resolve(databaseTestData.cursorWrapper([{_id: c}]));
+            };
+
+            const existingCollectionStub = dbStubs.collection;
+            const dbCollectionSpy = new Spy(existingCollectionStub);
+            dbStubs.collection = dbCollectionSpy.func;
+
+            return users.addRecommendation(testFromUser, testToUser, testShowName, defaultRecommendation)
+                .then(() => {
+                    expect(dbCollectionSpy.calledWith.length, `Expected db.collection to have been called 4 times. saw ${dbCollectionSpy.calledWith.length}`).to.equal(4);
+                    const actualSavedCollections = dbCollectionSpy.calledWith.map(x => x[0]);
+                    const expectedSavedCollections = ['recommendations', 'recommendationTo', 'recommendationFrom', 'recommendationFor'];
+                    expect(actualSavedCollections).to.deep.equal(expectedSavedCollections);
+                });
         });
     });
 });

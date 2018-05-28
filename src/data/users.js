@@ -3,7 +3,7 @@
 // If you swap out backends (mongodb/mysql/postGres/redis) or scrapers, then this is were you change
 // code to point to the new access methods.
 const bcrypt = require('bcrypt');
-const { UserNotFoundError, NonUniqueUserError, UserPasswordNotSetError} = require('./dataErrors');
+const { UserNotFoundError, NonUniqueUserError, UserPasswordNotSetError, ShowNotFoundError} = require('./dataErrors');
 const schemas = require('./schemas');
 const Logger = require('../util/Logger');
 
@@ -34,6 +34,34 @@ function checkUserCount(userDataRows, userName){
         );
     }
     return Promise.reject(new UserNotFoundError(`User '${userName}' not found`));
+}
+
+/**
+ * 
+ * @param {string} name name of user
+ * @param {Boolean} returnId whether to return user Id if found;
+ * @returns {Promise} {Boolean} Returns true if user exists, false if not. Or,if `returnId`, returns the _id field if it exists, else false
+ */
+async function checkIfUserExists(name, returnId =false){
+    const data = await db.query(aql`FOR u IN users FILTER u.name==${name} RETURN u`).then(cursor => cursor.all());
+    if(returnId && data[0]){
+        return data[0]._id || false;
+    }
+    return !!(data.length);
+}
+
+/**
+ * 
+ * @param {string} name name of show
+ * @param {Boolean} returnId whether to return show Id if found;
+ * @returns {Promise} {Boolean} Returns true if shows exists, false if not.  Or,if `returnId`, returns the _id field if it exists, else false
+ */
+async function checkIfShowExistsByName(name, returnId =false){
+    const data = await db.query(aql`FOR s IN shows FILTER s.name==${name} RETURN s`).then(cursor => cursor.all());
+    if(returnId && data[0]){
+        return data[0]._id || false;
+    }
+    return !!(data.length);
 }
 
 /**
@@ -187,8 +215,7 @@ async function addUser(userDataObject){
         throw new TypeError(JSON.stringify(validator.errors));
     }
     //Verify user doesn't already exist:
-    const data = await db.query(aql`FOR u IN users FILTER u.name==${userDataObject.name} RETURN u`).then(cursor => cursor.all());
-    if (data.length > 0){
+    if (await checkIfUserExists(userDataObject.name)){
         throw new NonUniqueUserError(`A user under the name '${userDataObject.name}' already exists in the database.`);
     }
     // -- Add the user vert -- //
@@ -209,33 +236,38 @@ async function addUser(userDataObject){
 
     return true;
 }
-
-async function addRecommendation(toUsername, fromUsername, showIdentifier, recommendation) {
+/**
+ * 
+ * @param {string} toUsername the user whom the recommendation is for.
+ * @param {string} fromUsername the user who made the recommendation
+ * @param {string} showName the name of the show the recommendation is for
+ * @param {Object} recommendation recommendation data object.
+ */
+async function addRecommendation(toUsername, fromUsername, showName, recommendation) {
     //Check user exists
-    if (db.getData().findIndex(x => x.name === toUsername) === -1) {
+    const toUserId = await checkIfUserExists(toUsername, true);
+    if (!toUserId) {
         throw new UserNotFoundError(`User '${toUsername}' not found`);
     }
-    //TODO: validate recommendation data
-
-    //Add recommendation (adding show listing if necessary)
-    const index = db.getData().findIndex(x => x.name === toUsername);
-    const showIdField = typeof showIdentifier === 'number' ? 'malAnimeId' : 'animeName'; //Type of find depends on data type
-    let showIndex = db.data[index].backlog.findIndex(show => show[showIdField] === showIdentifier);
-    if(showIndex === -1) {
-        //Show not on user backlog, so make instance of it:
-        db.data[index].backlog.push({
-            [showIdField]: showIdentifier
-        });
-        showIndex = db.data[index].backlog.length -1;   // it now exists on the end :)
+    const fromUserId = await checkIfUserExists(fromUsername, true);
+    if (!fromUserId) {
+        throw new UserNotFoundError(`User '${fromUsername}' not found`);
+    }
+    //Check show exists
+    // TODO:
+    const showId = await checkIfShowExistsByName(showName, true); 
+    if (!showId) {
+        throw new ShowNotFoundError(`Show '${showName}' not found.`);
     }
 
-    if(!db.data[index].backlog[showIndex].recommendations){
-        db.data[index].backlog[showIndex].recommendations = [];
-    }
+    // TODO: validate recommendation data
 
-    //TODO: Check if user has already made recommendation and ...(?)
-
-    db.data[index].backlog[showIndex].recommendations.push(recommendation);
+    //Add recommendation vert
+    const recommendationVert = await db.collection('recommendations').save(recommendation, { returnNew: true });
+    //Add edges
+    await db.collection('recommendationTo').save({_from: recommendationVert._id, _to: toUserId});
+    await db.collection('recommendationFrom').save({_from: recommendationVert._id, _to: fromUserId});
+    await db.collection('recommendationFor').save({_from: recommendationVert._id, _to: showId});
 
     return true;
 }
