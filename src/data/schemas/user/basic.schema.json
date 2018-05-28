@@ -6,8 +6,24 @@
         "name": {
             "type": "string",
              "description": "The username to be displayed",
+             "unique": true,
              "pattern": "^[\\w\\d-_]{1,30}$"
         },
-        "malVerified": {"type": "boolean", "description": "Has the MAL account been verified as theirs?"}
-    }
+        "malVerified": {"type": "boolean", "description": "Has the MAL account been verified as theirs?"},
+        "friends": {
+            "type": "array",
+            "items": {
+                "allOf": [
+                    {"$ref": "#"},
+                    {
+                        "type": "object", 
+                        "properties": {
+                            "malFrienship": {"type": "boolean", "description": "Was the friendship imported from MAL?"}
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "required": ["name"]
 }

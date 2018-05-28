@@ -3,7 +3,7 @@
     "type": "object",
     "allOf": [
         {
-            "$ref": "./basic.schema.json#"
+            "$ref": "basic.schema.json"
         },
         {
             "type": "object",
@@ -22,8 +22,7 @@
                         {"$ref": "./twitterSignIn.schema.json"}
                     ]
                 }
-            },
-            "required": [ "signIn" ]
+            }
         },
         {
             "type": "object",
@@ -35,6 +34,6 @@
                     }
                 }
             }
-        },
+        }
     ]
 }

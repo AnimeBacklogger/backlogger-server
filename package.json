@@ -9,7 +9,8 @@
     "scripts": {
         "lint": "eslint --color ./src/**/*.js",
         "lint:fix": "eslint --color ./src/**/*.js --fix",
-        "test": "mocha -c src/**/*.spec.js"
+        "test": "mocha -r ./test/unitTest_before.js -c src/**/*.spec.js",
+        "test:integration": "mocha -c test/integrationTests/*.js"
     },
     "keywords": [
         "backlogger",
@@ -19,12 +20,13 @@
     "license": "GPL-3.0",
     "dependencies": {
         "ajv": "^6.4.0",
+        "arangojs": "^6.2.4",
         "bcrypt": "^1.0.3",
         "express": "^4.16.3",
         "express-session": "^1.15.6",
-        "mongodb": "^3.0.5",
         "request": "^2.85.0",
-        "request-promise": "^4.2.2"
+        "request-promise": "^4.2.2",
+        "yargs": "^11.0.0"
     },
     "devDependencies": {
         "chai": "^4.1.2",

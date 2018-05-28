@@ -1,48 +1,86 @@
-//Functions to get the object schemas.
+// Loads all the schemas in current and subdirectories, using pattern './**/*.schema.json'
 const path = require('path');
+const fs = require('fs');
+const loader = require('./loader');
 
-function loadSchema(schemaPath){
-    //Make sure it's absolute:
-    schemaPath = path.isAbsolute(schemaPath) ? schemaPath: path.resolve(schemaPath);
+//Get AJV setup
+const Ajv = require('ajv');
 
-    //Get a schemaId from it: (and keep it posix)
-    const schemaId = path.relative(__dirname, schemaPath).replace(/\\/g, '/');
+const LOADED_SCHEMAS = {};
 
-    //attempt to load the file: (with deep copy)
-    const schema = JSON.parse(JSON.stringify(require(schemaPath)));
-
-    //Set the new schema id
-    schema['$id'] = schemaId;
-
-    //Adjust any $ref's in the object (modifies the object)
-    objectKeyFinder(schema, '$ref', (ref) => {
-        return path.relative(__dirname, path.resolve(path.dirname(schemaPath), ref)).replace(/\\/g, '/');
+function loadSchemas(){
+    return getListOfSchemaFiles().then(schemasToLoad => {
+        schemasToLoad.forEach(schemaFile => {
+            const loaded = loader.loadSchema(schemaFile);
+            LOADED_SCHEMAS[loaded['$id']] = loaded;
+        });
+        return LOADED_SCHEMAS;
     });
-
-    return schema;
 }
 
-function objectKeyFinder(object, key, replaceFunc){
-    if(typeof object === 'object'){
-        //make a copy:
-        if(object instanceof Array){
-            return object.map(x => objectKeyFinder(x, key, replaceFunc));
-        }
-        //if not array, go through keys:
-        Object.keys(object).forEach(objKey => {
-            if(objKey === key){
-                object[objKey] = replaceFunc(object[objKey]);
+function getListOfSchemaFiles(dir=__dirname, recurse= true){
+    return new Promise((res, rej) => {
+        fs.readdir(dir, (e, files) => {
+            if(e){
+                rej(e);
             } else {
-                object[objKey] = objectKeyFinder(object[objKey], key, replaceFunc);
+                Promise.all(
+                    //Load all the paths
+                    files.map(fileDescriptor => {
+                        const fullFilePath = path.resolve(dir, fileDescriptor);
+                        return new Promise((x, y) => {
+                            if(recurse && fs.lstatSync(fullFilePath).isDirectory()){
+                                //if a directory (and set to recurse), recurse
+                                getListOfSchemaFiles(fullFilePath).then(x, y);
+                            } else {
+                                x(fullFilePath);
+                            }
+                        });
+                    }))
+                    .then(results => {
+                        //Need to flatten the results:
+                        return results.reduce((acc, f) => {
+                            if(f instanceof Array){
+                                acc.push(...f);
+                            } else {
+                                acc.push(f);
+                            }
+                            return acc;
+                        }, []);
+                    })
+                    .then(results => {
+                        //filter to only `*.schema.json`
+                        return results.filter(f => (/.*\.schema\.json$/).test(f));
+                    })
+                    .then(res);
             }
         });
-        return object;
-    }
-    //not object:
-    return object;
+    });
 }
 
+function getAjvInstance(){
+    const ajv = new Ajv({
+        allErrors: true,    //TODO: Make this a DEV env only setting
+        verbose: true,      //TODO: Make this a DEV env only setting
+        extendRefs: 'fail'
+    });
+    Object.keys(LOADED_SCHEMAS).forEach((schemaId) => {
+        ajv.addSchema(LOADED_SCHEMAS[schemaId]);
+    });
+    return ajv;
+}
+
+function getSchemaById(id){
+    return LOADED_SCHEMAS[loader.prefixSchemaId(id)];
+}
+
+//Auto load on module startup
+loadSchemas();
+
 module.exports= {
-    objectKeyFinder,
-    loadSchema
+    getAjvInstance,
+    getListOfSchemaFiles,
+    loadSchemas,
+    LOADED_SCHEMAS,
+    getSchemaById
 };

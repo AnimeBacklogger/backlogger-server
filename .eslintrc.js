@@ -51,6 +51,7 @@ module.exports = {
         "max-params": ["warn", 5],
         "no-loop-func": "warn",
         "no-multiple-empty-lines": ["error", {max:1, maxEOF:1}],
+        "no-underscore-dangle": "off",  //we have arrango fields we need to use.
         "no-var": "error",
         "no-warning-comments": "warn",
         "prefer-const": "error",
@@ -58,9 +59,12 @@ module.exports = {
             "error",
             { "allowEmptyReject": true }
         ],
+        "quotes": "off", //So I can just copy JSON objects in
         "semi": "error",
         "semi-spacing": "error",
         "semi-style": ["error", "last"],
+        "wrap-iife": "off",
+        "wrap-regex": "warn",
         "yoda": "off",
         /*****************************************************/
         // The line of "I've checked and approved this rule" //
@@ -93,7 +97,6 @@ module.exports = {
         "keyword-spacing": "off",
         "line-comment-position": "off",
         "linebreak-style": "off",
-        "lines-around-comment": "error",
         "lines-around-directive": "error",
         "max-depth": "error",
         "max-len": "off",
@@ -174,7 +177,6 @@ module.exports = {
         "no-throw-literal": "error",
         "no-trailing-spaces": "error",
         "no-undef-init": "error",
-        "no-underscore-dangle": "error",
         "no-unmodified-loop-condition": "error",
         "no-unneeded-ternary": "error",
         "no-unused-expressions": "error",
@@ -203,9 +205,7 @@ module.exports = {
         "prefer-spread": "error",
         "prefer-template": "error",
         "quote-props": "off",
-        "quotes": "off",
         "radix": "error",
-        "require-await": "error",
         "require-jsdoc": "off",
         "rest-spread-spacing": "error",
         "sort-imports": "error",
@@ -236,8 +236,6 @@ module.exports = {
             "never"
         ],
         "vars-on-top": "error",
-        "wrap-iife": "error",
-        "wrap-regex": "error",
         "yield-star-spacing": "error",
     }
 };

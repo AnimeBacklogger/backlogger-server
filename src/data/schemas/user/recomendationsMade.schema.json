@@ -1,0 +1,33 @@
+{
+    "$id": "recomendationsMade.schema.json",
+    "description": "The schema of data from requesting what recommendations a user has made",
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "animeName": {
+                "type": "string",
+                "description": "A name for ths anime. (should be scraped from MAL)"
+            },
+            "malAnimeId": {
+                "type": "integer",
+                "description": "The MAL ID linked to this Anime. Used to retreive anime details."
+            },
+            "score": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10,
+                "description": "score between 0-10 of how much they think the user will enjoy the show"
+            },
+            "comment": {
+                "type": "string",
+                "maxLength": 240,
+                "description": "A short comment about the recommendation"
+            },
+            "to": {
+                "type": "string",
+                "description": "The backlogger this recommendation was aimed at." 
+            }
+        }
+    }
+}
