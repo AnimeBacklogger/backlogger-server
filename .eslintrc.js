@@ -20,7 +20,7 @@ module.exports = {
         //-------------------------------------//
         "arrow-parens": ["error", "as-needed", { "requireForBlockBody": false }],
         "comma-dangle": ["error", "never"],    // how about no
-        "complexity": ["error", 5],   // KISS
+        "complexity": ["error", 10],   // KISS
         "dot-notation": [
             "error",
             {

@@ -1,6 +1,8 @@
+'use strict';
+
 const config = require('../config');
 
-/* eslint-disable no-console*/ //Because this is a script
+/* eslint-disable no-console */ // Because this is a script
 
 require('../setupFunctions')(config).catch(err => {
     console.error(''.padStart(20, '-'));

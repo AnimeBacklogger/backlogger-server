@@ -1,3 +1,5 @@
+'use strict';
+
 const config = require('../../util/configFileHandler').getConfig().arango;
 
 const DB_HOST = config.host;

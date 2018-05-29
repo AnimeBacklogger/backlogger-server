@@ -1,7 +1,11 @@
-/* globals describe it*/
-const {expect} = require('chai');
+'use strict';
+
+/* globals describe it */
+const { expect } = require('chai');
 const proxyquire = require('proxyquire');
 const path = require('path');
+const loader = require('./loader');
+
 const stubs = {};
 const uut = proxyquire('./index.js', stubs);
 
@@ -17,19 +21,16 @@ const expectedSchemas = [
 ];
 
 describe('/data/schemas/index.js', () => {
-
     describe('getListOfSchemaFiles()', () => {
-        it('loads files matching glob of **/*.schema.json', () => {
-            return uut.getListOfSchemaFiles().then(schemaFilesFound => {
-                const expectedSchemaFilePaths = expectedSchemas.map(x => path.resolve(__dirname, x));
-                expect(schemaFilesFound).to.have.members(expectedSchemaFilePaths);
-            });
-        });
+        it('loads files matching glob of **/*.schema.json', () => uut.getListOfSchemaFiles().then(schemaFilesFound => {
+            const expectedSchemaFilePaths = expectedSchemas.map(x => path.resolve(__dirname, x));
+            expect(schemaFilesFound).to.have.members(expectedSchemaFilePaths);
+        }));
     });
 
     describe('LOADED_SCHEMAS', () => {
         it('should contain the list of expected schemas', () => {
-            const expectedSchemaKeys = expectedSchemas.map(x => require('./loader').prefixSchemaId(x));
+            const expectedSchemaKeys = expectedSchemas.map(x => loader.prefixSchemaId(x));
             expect(Object.keys(uut.LOADED_SCHEMAS)).to.have.members(expectedSchemaKeys);
         });
     });
@@ -38,9 +39,9 @@ describe('/data/schemas/index.js', () => {
         it('gives an ajv instance with all schemas loaded', () => {
             const testInst = uut.getAjvInstance();
 
-            const expectedSchemaKeys = expectedSchemas.map(x => require('./loader').prefixSchemaId(x));
+            const expectedSchemaKeys = expectedSchemas.map(x => loader.prefixSchemaId(x));
             expectedSchemaKeys.forEach(schemaId => {
-                expect(testInst.getSchema(schemaId), `Missing schema ${schemaId}`).to.not.be.undefined;     //eslint-disable-line no-unused-expressions
+                expect(testInst.getSchema(schemaId), `Missing schema ${schemaId}`).to.not.be.undefined;     // eslint-disable-line no-unused-expressions
             });
         });
     });
@@ -48,8 +49,8 @@ describe('/data/schemas/index.js', () => {
     describe('getSchemaById()', () => {
         it('returns a schema by it\'s un-prefixed id', () => {
             expectedSchemas.forEach(schemaId => {
-                expect(uut.getSchemaById(schemaId), `Missing schema ${schemaId}`).to.not.be.undefined;     //eslint-disable-line no-unused-expressions
-                const expectedSchemaShape = uut.LOADED_SCHEMAS[require('./loader').prefixSchemaId(schemaId)];
+                expect(uut.getSchemaById(schemaId), `Missing schema ${schemaId}`).to.not.be.undefined;     // eslint-disable-line no-unused-expressions
+                const expectedSchemaShape = uut.LOADED_SCHEMAS[loader.prefixSchemaId(schemaId)];
                 expect(uut.getSchemaById(schemaId), `Schema ${schemaId} was wrong`).to.be.deep.equal(expectedSchemaShape);
             });
         });
