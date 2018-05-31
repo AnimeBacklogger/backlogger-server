@@ -34,6 +34,7 @@ module.exports = {
             4,
             { SwitchCase: 1 }
         ],
+        "linebreak-style": [ "error", require('os').EOL === '\r\n'? 'windows': 'unix'], // I want to enforce unix if running on Linux build server, but handle deving on local windows machine.
         "max-len": "off",     // we have a lot of long lines that can't be broken neatly. 
         "no-console": "error",  // There shouldn't be a need for console. We have a Logger
         "no-multi-spaces": ["error", { "ignoreEOLComments": true }],  // allow spacing before EOL comments

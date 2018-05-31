@@ -1,3 +1,7 @@
+'use strict';
+
+/* eslint-disable no-console */ // because this is a script
+
 const { Database } = require('arangojs');
 const DATABASE_CONFIG = require('../../src/data/db/config');
 

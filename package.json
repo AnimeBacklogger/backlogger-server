@@ -7,8 +7,8 @@
         "doc": "docs"
     },
     "scripts": {
-        "lint": "eslint --color ./src/**/*.js",
-        "lint:fix": "eslint --color ./src/**/*.js --fix",
+        "lint": "eslint --color ./src/**/*.js ./test/**/*.js",
+        "lint:fix": "npm run lint -- --fix",
         "test": "mocha -r ./test/unitTest_before.js -c src/**/*.spec.js",
         "test:integration": "mocha -c test/integrationTests/*.js"
     },
