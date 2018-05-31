@@ -18,7 +18,7 @@
 {
     "type": "object",
     "properties": {
-        "score": { "description": "recommendation level" }, 
+        "score": { "type": "integer","description": "recommendation level" }, 
         "comment": { "description": "comment regarding recommendation" }
     }
 }
@@ -102,7 +102,11 @@
     "properties": {
         "_from": { "description": "<user>._id" },
         "_to": { "description": "<show>._id" },
-        "personalScore": { "type": "integer" }
+        "personalScore": { "type": "integer" },
+        "order": {
+            "type": "integer", 
+            "description": "The order this show appears in the backlog. Lowest is higher priority, undefined/null are unranked (lowest)"
+            }
     }
 }
 ```

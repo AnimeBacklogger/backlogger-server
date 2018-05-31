@@ -213,6 +213,65 @@ async function setUserPassword(user, oldPass, newPass) {
     });
 }
 
+/**
+ * 
+ * @param {string} user The user's name
+ * @param {Array} backlogOrderArray an Array of backlog reorder objects, in the format {name:<showName>, order: <new integer order value>} 
+ * @returns {Promise} a promise that the updates have occurred
+ * @throws {UserNotFoundError} the given user does not exist
+ * @throws {Error} One of the shows was not present in the user's backlog
+ * @throws {Error} duplicate entry found for a show.
+ */
+async function updateUserBacklogOrdering(user, backlogOrderArray) {
+    const userId = await checkIfUserExists(user);
+    if (!userId) {
+        throw new UserNotFoundError(`Unable to find user '${user}'`);
+    }
+    if (!Array.isArray(backlogOrderArray)) {
+        throw new TypeError('backlogOrderArray must be array');
+    }
+
+    // TODO: Use this to get showIds, so we match better (and match in one place in the code) 
+    const showNames = backlogOrderArray.reduce((acc, { name }) => {
+        if (acc.includes(name)) {
+            throw Error(`Duplicate entry for show: '${name}'`);
+        } else {
+            acc.push(name);
+        }
+        return acc;
+    }, []);
+
+    return db.query(aql`
+        FOR u IN users
+            FILTER u.name =='Chrolo'
+                FOR s,b IN 1..1 OUTBOUND u hasInBacklog
+                    RETURN {
+                        show: s,
+                        backlogEdge: b
+                    }
+        `).then(cursor => cursor.all())
+        .then(currentBacklog => {
+            // Match up edges and orders
+            backlogOrderArray.map(orderItem => {
+                const index = currentBacklog.findIndex(x => x.show.name === orderItem.name);
+
+                if (index === -1) {
+                    // TODO: Make this a more specific error class
+                    throw new Error(`Show [${orderItem.name}] was not in [${user}]'s backlog`);
+                }
+
+                return {
+                    backlogEdgeId: currentBacklog[index].backlogEdge._id,
+                    newOrder: orderItem.order
+                }
+            });
+        })
+        .then(reorderData => {
+            // FIXEME: batch update of matching edges
+            console.log(`Reorder data is ${JSON.stringify(reorderData, null, 2)}`);
+        });
+}
+
 //------------------------------
 // Creators
 //------------------------------
@@ -294,5 +353,6 @@ module.exports = {
     getUserInfoByName,
     getUserBacklog,
     setUserPassword,
+    updateUserBacklogOrdering,
     validateUserLogin
 };
