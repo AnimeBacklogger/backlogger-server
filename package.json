@@ -21,11 +21,22 @@
     "dependencies": {
         "ajv": "^6.4.0",
         "arangojs": "^6.2.4",
+        "babel-core": "^6.26.3",
+        "babel-loader": "^7.1.4",
+        "babel-preset-env": "^1.7.0",
+        "babel-preset-react": "^6.24.1",
         "bcrypt": "^1.0.3",
+        "css-loader": "^0.28.11",
         "express": "^4.16.3",
         "express-session": "^1.15.6",
+        "react": "^16.4.0",
+        "react-dom": "^16.4.0",
+        "redux": "^4.0.0",
         "request": "^2.85.0",
         "request-promise": "^4.2.2",
+        "sass-loader": "^7.0.1",
+        "style-loader": "^0.21.0",
+        "webpack": "^4.10.2",
         "yargs": "^11.0.0"
     },
     "devDependencies": {
