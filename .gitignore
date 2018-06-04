@@ -1,6 +1,9 @@
 # NodeJs ignores:
 node_modules
 
+# Build directory
+dist/
+
 # Personal:
 old/
 tmp/
