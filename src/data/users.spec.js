@@ -10,8 +10,12 @@ const { expect } = require('chai');
 const proxyquire = require('proxyquire');
 
 const dbStubs = {};
+let checkIfShowExistsByNameStub = async () => true;
 const users = proxyquire('./users', {
-    './db': dbStubs
+    './db': dbStubs,
+    './shows': {
+        checkIfShowExistsByName: (...args) => checkIfShowExistsByNameStub(...args)
+    }
 });
 const { UserNotFoundError, NonUniqueUserError, ShowNotFoundError } = require('./dataErrors');
 const databaseTestData = require('../../test/data/databaseData');
@@ -349,6 +353,7 @@ describe('/data/users.js', () => {
             dbStubs.collection = () => ({
                 save: () => ({ _id: 3 })
             });
+            checkIfShowExistsByNameStub = async () => true;
         });
 
         const testFromUser = 'Bob';
@@ -394,14 +399,7 @@ describe('/data/users.js', () => {
         });
 
         it('rejects with `ShowNotFoundError` if targeted show does not exist', () => {
-            let c = 0;
-            dbStubs.query = () => {
-                c++;
-                if (c === 3) {    // 3rd call is the getShowId call
-                    return Promise.resolve(databaseTestData.cursorWrapper([]));
-                }
-                return Promise.resolve(databaseTestData.cursorWrapper([{ _id: 3 }]));
-            };
+            checkIfShowExistsByNameStub = async () => false;
             return users.addRecommendation(testFromUser, testToUser, testShowName, defaultRecommendation)
                 .then(
                     () => Promise.reject(new Error('Should have rejected')),

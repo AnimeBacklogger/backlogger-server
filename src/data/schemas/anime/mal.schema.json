@@ -18,5 +18,5 @@
         "anime_end_date_string": { "type": "string", "pattern": "\\d{2}-\\d{2}-\\d{2}", "descrtiption": "When the anime finished airing" },
         "priority_string": { "type": "string" }
     },
-    "required": ["anime_id", "anime_title", "anime_url"]
+    "required": ["anime_id", "anime_title"]
 }

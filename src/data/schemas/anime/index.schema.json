@@ -1,0 +1,17 @@
+{
+    "$id": "index.schema.json",
+    "type": "object",
+    "allOf": [
+        {
+            "$ref": "basic.schema.json"
+        },
+        {
+            "type": "object",
+            "properties": {
+                "malInformation": {
+                    "$ref": "./mal.schema.json"
+                }
+            }
+        }
+    ]
+}

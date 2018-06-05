@@ -1,0 +1,31 @@
+{
+    "$id": "basic.schema.json",
+    "description": "The basic data for a show",
+    "type": "object",
+    "properties": {
+        "name":{ 
+            "type": "string",
+            "description": "The main system name for this show"
+        },
+        "altNames": {
+            "type":"array",
+            "description": "Any alternative names for the show",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "type": {"$ref": "#/definitions/nameType"},
+                    "name": {"type": "string"}
+                }
+            }
+        }
+    },
+    "required": ["name"],
+    "definitions": {
+        "nameType": {
+            "type": "string",
+            "enum": [
+                "eng", "romaji", "kanji", "kana", "nickname"
+            ]
+        }
+    }
+}

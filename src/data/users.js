@@ -10,6 +10,7 @@ const {
 } = require('./dataErrors');
 const schemas = require('./schemas');
 const Logger = require('../util/Logger');
+const { checkIfShowExistsByName } = require('./shows');
 
 const db = require('./db');
 const { aql } = require('arangojs');
@@ -50,20 +51,6 @@ function checkUserCount(userDataRows, userName) {
  */
 async function checkIfUserExists(name, returnId = false) {
     const data = await db.query(aql`FOR u IN users FILTER u.name==${name} RETURN u`).then(cursor => cursor.all());
-    if (returnId && data[0]) {
-        return data[0]._id || false;
-    }
-    return !!(data.length);
-}
-
-/**
- *
- * @param {string} name name of show
- * @param {Boolean} returnId whether to return show Id if found;
- * @returns {Promise} {Boolean} Returns true if shows exists, false if not.  Or,if `returnId`, returns the _id field if it exists, else false
- */
-async function checkIfShowExistsByName(name, returnId = false) {
-    const data = await db.query(aql`FOR s IN shows FILTER s.name==${name} RETURN s`).then(cursor => cursor.all());
     if (returnId && data[0]) {
         return data[0]._id || false;
     }

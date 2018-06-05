@@ -10,6 +10,8 @@ const stubs = {};
 const uut = proxyquire('./index.js', stubs);
 
 const expectedSchemas = [
+    'anime/basic.schema.json',
+    'anime/index.schema.json',
     'anime/mal.schema.json',
     'backlog/basic.schema.json',
     'user/basic.schema.json',
