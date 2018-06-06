@@ -82,6 +82,7 @@ describe('/data/shows.js', () => {
                 { name: 5 },    // name is not a string
                 { name: ['bob'] },    // name is not a string
                 { name: { eng: 'bob' } },    // name is not a string
+                { name: 'okay', altNames: [{ type: 'random', name: 'alt' }] },  // altName type invalid
                 {}              // mising name
             ];
 
