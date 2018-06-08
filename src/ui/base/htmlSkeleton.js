@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = ({head, appRender, appRootId="reactRoot" }) => `
+module.exports = ({head, appRender, appRootId = 'reactRoot' }) => `
 <html>
 <head>
     ${head}

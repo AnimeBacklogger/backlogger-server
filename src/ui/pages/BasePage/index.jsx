@@ -1,11 +1,25 @@
-import {ReactComponent} from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 
-class BasePage extends ReactComponent {
+import TopBar from '../../molecules/TopBar'
+
+class BasePage extends React.Component {
 
     render(){
-        return <div>
-            
-        </div>;
+        const {children} = this.props;
+        return (
+            <div>
+                <TopBar/>
+                <div>
+                    {children}
+                </div>
+            </div>
+        );
     }
 }
+
+BasePage.propTypes = {
+    children: PropTypes.element.isRequired
+}
+
 export default BasePage;

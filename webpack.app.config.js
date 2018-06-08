@@ -1,17 +1,15 @@
 'use strict';
 
 const path = require('path');
-/*/ // FIXME: download the plugin
-// const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-//*/
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 module.exports = {
     entry: {
-        app: './src/app/demoApp.js'
+        backloggerApp: './src/app/demoApp.js'
     },
     devtool: 'source-map',
     output: {
-        filename: 'app.bundle.js',
+        filename: '[name].js',
         path: path.resolve(__dirname, './dist')
     },
     resolve: {
@@ -36,16 +34,12 @@ module.exports = {
                 test: /\.scss$/,
                 exclude: /(node_modules)/,
                 use: [
-                    /*/ // FIXME: download the plugin
                     MiniCssExtractPlugin.loader,
-                    /*/
-                    'style-loader',
-                    //*/                    
                     {
                         loader: 'css-loader',
                         options: {
                             modules: true,
-                            localIdentName: '[path][name]__[local]--[hash:base64:5]'
+                            localIdentName: '[local]_[hash:base64:5]'
                         }
                     },
                     {
@@ -55,12 +49,10 @@ module.exports = {
             }
         ]
     },
-    /*/ // FIXME: download the plugin
     plugins: [
         new MiniCssExtractPlugin({
             filename: '[name].css',
             chunkFilename: '[id].css'
         })
-    ],
-    //*/
+    ]
 };
