@@ -3,7 +3,12 @@
 
 
 .mainBar {
+    width: 100%;
     background-color: $BackloggerBlue;
     color: $TextInvertColour;
     padding: px2rem(10px);
+    font-size: 2rem;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    display: flex;
+    align-items: center;
 }

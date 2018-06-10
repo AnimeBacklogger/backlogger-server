@@ -1,0 +1,15 @@
+@import '../base/styles/functions.scss';
+
+$icon_md : px2rem(30px);
+$icon_lg : px2rem(50px);
+
+
+.icon {
+    width: $icon_md;
+    height: $icon_md;
+    display: inline-block;
+
+    &>svg{
+        fill: currentColor; 
+    }
+}

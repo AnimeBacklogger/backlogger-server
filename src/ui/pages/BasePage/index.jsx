@@ -2,15 +2,16 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import TopBar from '../../molecules/TopBar'
+import styles from './styles.scss'
 
 class BasePage extends React.Component {
 
     render(){
         const {children} = this.props;
         return (
-            <div>
+            <div className={styles.pageBody}>
                 <TopBar/>
-                <div>
+                <div className={styles.mainPage}>
                     {children}
                 </div>
             </div>

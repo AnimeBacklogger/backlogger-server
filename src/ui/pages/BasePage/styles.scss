@@ -1,0 +1,14 @@
+@import '../../base/styles/colours.scss';
+
+.mainPage{
+    flex: 1 0 auto;
+}
+
+.pageBody{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+
+}
