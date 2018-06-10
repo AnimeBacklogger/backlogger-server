@@ -1,3 +1,9 @@
+@import '../../base/styles/colours.scss';
+@import '../../base/styles/functions.scss';
+
+
 .mainBar {
-    background-color: #FF4545
+    background-color: $BackloggerBlue;
+    color: $TextInvertColour;
+    padding: px2rem(10px);
 }

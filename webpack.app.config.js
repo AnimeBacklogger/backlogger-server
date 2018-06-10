@@ -5,7 +5,8 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 module.exports = {
     entry: {
-        backloggerApp: './src/app/demoApp.js'
+        backloggerApp: './src/app/demoApp.js',
+        baseStyleSheet: './src/ui/base/globalStyle.scss'
     },
     devtool: 'source-map',
     output: {

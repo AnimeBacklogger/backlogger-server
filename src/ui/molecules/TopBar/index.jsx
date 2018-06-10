@@ -5,8 +5,7 @@ export default (props) => {
 
     return (
         <div class={styles.mainBar}>
-            <span>This is a top bar</span>
-            <span>With props: {JSON.stringify(props)}</span>
+            <span>Backlogger</span>
         </div>
     );
 }
