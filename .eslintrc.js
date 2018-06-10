@@ -1,241 +1,69 @@
 module.exports = {
+    "plugins": [
+        "mocha"
+    ],
     "env": {
         "es6": true,
         "node": true
     },
+    "extends": "airbnb-base",
     "parserOptions": {
+        "ecmaFeatures": {
+            "experimentalObjectRestSpread": true
+        },
         "ecmaVersion": 2017,
-        "sourceType": "module"
+        "sourceType": "script"
     },
-    "extends": "eslint:recommended",
-    "rules": {
-        "array-bracket-newline": [
-            "error",
-            { "multiline": true }
-        ],
-        "array-bracket-spacing": "error",
-        "array-callback-return": "error",
-        //"array-element-newline": ["error",{ "multiline": true}],  //I want to enforce something like this. But more like "if array >5 then you have to, else it's optional. Also, if you newline any elements, you have to newline all"
-        "arrow-spacing": "error",
-        "block-spacing": "error",
-        "brace-style": [
-            "error",
-            "1tbs"
-        ],
-        "callback-return": "error",
-        "camelcase": "error",
-        "class-methods-use-this": "error",
-        "comma-dangle": "error",
-        "comma-spacing": "error",
-        "comma-style": ["error","last"],
-        //"complexity": ["error", 5],   //breaks my switch statement, but I like the idea ;_;
-        "computed-property-spacing": [
-            "error",
-            "never"
-        ],
-        "consistent-return": "error",
-        "curly": "error",
-        "default-case": "error",
+    "rules": {   
+        //-------------------------------------//
+        //-- Modifications to airbnb's rules --//
+        //-------------------------------------//
+        "arrow-parens": ["error", "as-needed", { "requireForBlockBody": false }],
+        "comma-dangle": ["error", "never"],    // how about no
+        "complexity": ["error", 10],   // KISS
         "dot-notation": [
             "error",
             {
                 "allowKeywords": true,
-                "allowPattern": "[^\\w\\d_]"    //if the name uses special chars I'll let you off
+                "allowPattern": "[^\\w\\d_]"    // I think it looks neater/safer like for non alpha numerics
             }
         ],
+        "function-paren-newline": "off",  // This rule doesn't always work how you might expect
         "indent": [
             "error",
             4,
-            {SwitchCase: 1}
+            { SwitchCase: 1 }
         ],
-        "max-params": ["warn", 5],
-        "no-loop-func": "warn",
-        "no-multiple-empty-lines": ["error", {max:1, maxEOF:1}],
-        "no-underscore-dangle": "off",  //we have arrango fields we need to use.
-        "no-var": "error",
-        "no-warning-comments": "warn",
-        "prefer-const": "error",
-        "prefer-promise-reject-errors": [
+        "linebreak-style": [ "error", require('os').EOL === '\r\n'? 'windows': 'unix'], // I want to enforce unix if running on Linux build server, but handle deving on local windows machine.
+        "max-len": "off",     // we have a lot of long lines that can't be broken neatly. 
+        "no-console": "error",  // There shouldn't be a need for console. We have a Logger
+        "no-multi-spaces": ["error", { "ignoreEOLComments": true }],  // allow spacing before EOL comments
+        "no-param-reassign": "warn",    // I do this a fair amount for strings and numbers, which are passed by value, not by reference
+        "no-plusplus": "off", // only an issue if you're not using semi colons
+        "no-underscore-dangle": "off",  // we make use of _id and _key from Arango. Also, this rule is purely stylistic
+        "no-warning-comments": "warn", // This makes tracking slightly easier :D
+        "quotes": [
             "error",
-            { "allowEmptyReject": true }
+            "single",
+            {
+                "avoidEscape": true
+            }
         ],
-        "quotes": "off", //So I can just copy JSON objects in
-        "semi": "error",
-        "semi-spacing": "error",
-        "semi-style": ["error", "last"],
-        "wrap-iife": "off",
-        "wrap-regex": "warn",
-        "yoda": "off",
-        /*****************************************************/
-        // The line of "I've checked and approved this rule" //
-        /*****************************************************/
-        "dot-location": [
-            "error",
-            "property"
+        "strict": ["warn", "safe"],    // unlike airbnb, we're not using babel, so we need strictmode
+        //----------------------//
+        //-- Additional Rules --//
+        //----------------------//
+        "valid-jsdoc": 2,
+        "require-jsdoc": [
+            2,
+            {
+                "require": {
+                    "FunctionDeclaration": true,
+                    "MethodDefinition": true,
+                    "ClassDeclaration": true
+                }
+            }
         ],
-        "eol-last": "error",
-        "eqeqeq": "error",
-        "for-direction": "error",
-        "func-call-spacing": "error",
-        "func-name-matching": "error",
-        "func-style": [
-            "error",
-            "declaration",
-            { "allowArrowFunctions": true }
-        ],
-        "function-paren-newline": "off",
-        "generator-star-spacing": "error",
-        "getter-return": "error",
-        "global-require": "off",
-        "guard-for-in": "error",
-        "handle-callback-err": "error",
-        "id-blacklist": "error",
-        "id-match": "error",
-        "init-declarations": "error",
-        "jsx-quotes": "error",
-        "key-spacing": "error",
-        "keyword-spacing": "off",
-        "line-comment-position": "off",
-        "linebreak-style": "off",
-        "lines-around-directive": "error",
-        "max-depth": "error",
-        "max-len": "off",
-        "max-lines": "error",
-        "max-nested-callbacks": "error",
-        "max-statements": "off",
-        "max-statements-per-line": "error",
-        "new-cap": "error",
-        "new-parens": "error",
-        "newline-after-var": "off",
-        "newline-before-return": "off",
-        "newline-per-chained-call": "off",
-        "no-alert": "error",
-        "no-array-constructor": "error",
-        "no-bitwise": "error",
-        "no-buffer-constructor": "error",
-        "no-caller": "error",
-        "no-catch-shadow": "error",
-        "no-confusing-arrow": "error",
-        "no-continue": "error",
-        "no-div-regex": "error",
-        "no-duplicate-imports": "error",
-        "no-else-return": "error",
-        "no-empty-function": "error",
-        "no-eq-null": "error",
-        "no-eval": "error",
-        "no-extend-native": "error",
-        "no-extra-bind": "error",
-        "no-extra-label": "error",
-        "no-floating-decimal": "error",
-        "no-implicit-globals": "error",
-        "no-implied-eval": "error",
-        "no-inline-comments": "off",
-        "no-invalid-this": "error",
-        "no-iterator": "error",
-        "no-label-var": "error",
-        "no-labels": "error",
-        "no-lone-blocks": "error",
-        "no-lonely-if": "off",
-        "no-magic-numbers": "off",
-        "no-mixed-operators": "error",
-        "no-mixed-requires": "error",
-        "no-multi-assign": "error",
-        "no-multi-spaces": "off",
-        "no-multi-str": "error",
-        "no-native-reassign": "error",
-        "no-negated-condition": "off",
-        "no-negated-in-lhs": "error",
-        "no-nested-ternary": "error",
-        "no-new": "error",
-        "no-new-func": "error",
-        "no-new-object": "error",
-        "no-new-require": "error",
-        "no-new-wrappers": "error",
-        "no-octal-escape": "error",
-        "no-param-reassign": "off",
-        "no-path-concat": "error",
-        "no-process-env": "error",
-        "no-process-exit": "off",
-        "no-proto": "error",
-        "no-prototype-builtins": "error",
-        "no-restricted-globals": "error",
-        "no-restricted-imports": "error",
-        "no-restricted-modules": "error",
-        "no-restricted-properties": "error",
-        "no-restricted-syntax": "error",
-        "no-return-assign": "error",
-        "no-return-await": "error",
-        "no-script-url": "error",
-        "no-self-compare": "error",
-        "no-sequences": "error",
-        "no-shadow": "error",
-        "no-shadow-restricted-names": "error",
-        "no-spaced-func": "error",
-        "no-sync": "off",
-        "no-tabs": "error",
-        "no-template-curly-in-string": "error",
-        "no-throw-literal": "error",
-        "no-trailing-spaces": "error",
-        "no-undef-init": "error",
-        "no-unmodified-loop-condition": "error",
-        "no-unneeded-ternary": "error",
-        "no-unused-expressions": "error",
-        "no-use-before-define": "off",
-        "no-useless-call": "error",
-        "no-useless-computed-key": "error",
-        "no-useless-concat": "error",
-        "no-useless-constructor": "error",
-        "no-useless-rename": "error",
-        "no-useless-return": "error",
-        "no-whitespace-before-property": "error",
-        "no-with": "error",
-        "nonblock-statement-body-position": "error",
-        "object-curly-newline": "off",
-        "object-curly-spacing": "error",
-        "one-var": "off",
-        "one-var-declaration-per-line": "error",
-        "operator-assignment": "error",
-        "operator-linebreak": "error",
-        "padded-blocks": "off",
-        "padding-line-between-statements": "error",
-        "prefer-arrow-callback": "error",
-        "prefer-destructuring": "off",
-        "prefer-numeric-literals": "error",
-        "prefer-rest-params": "error",
-        "prefer-spread": "error",
-        "prefer-template": "error",
-        "quote-props": "off",
-        "radix": "error",
-        "require-jsdoc": "off",
-        "rest-spread-spacing": "error",
-        "sort-imports": "error",
-        "sort-keys": "off",
-        "sort-vars": "error",
-        "space-before-blocks": "off",
-        "space-before-function-paren": "off",
-        "space-in-parens": [
-            "error",
-            "never"
-        ],
-        "space-infix-ops": "off",
-        "space-unary-ops": "error",
-        "spaced-comment": "off",
-        "strict": [
-            "error",
-            "never"
-        ],
-        "switch-colon-spacing": "error",
-        "symbol-description": "error",
-        "template-curly-spacing": [
-            "error",
-            "never"
-        ],
-        "template-tag-spacing": "error",
-        "unicode-bom": [
-            "error",
-            "never"
-        ],
-        "vars-on-top": "error",
-        "yield-star-spacing": "error",
+        "mocha/no-exclusive-tests": "error"
     }
 };

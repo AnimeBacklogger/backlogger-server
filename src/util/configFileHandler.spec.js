@@ -1,6 +1,9 @@
-/* globals describe it*/
+'use strict';
+
+/* globals describe it */
 const configFileHandler = require('./configFileHandler');
-const {expect} = require('chai');
+const { expect } = require('chai');
+
 describe('configFileHandler', () => {
     describe('minimiseConfig()', () => {
         it('will return an empty object if all default settings are used', () => {
@@ -28,8 +31,8 @@ describe('configFileHandler', () => {
         it('keeps any settings that aren\'t set as their defaults', () => {
             const input = {
                 arango: {
-                    host: 'localhost',  //this is default
-                    user: 'bob'         //this is NOT default
+                    host: 'localhost',  // this is default
+                    user: 'bob'         // this is NOT default
                 }
             };
             const expected = {

@@ -1,16 +1,19 @@
-/* globals describe it*/
-const {expect} = require('chai');
+'use strict';
+
+/* globals describe it */
+const { expect } = require('chai');
 const proxyquire = require('proxyquire');
 const path = require('path');
+
 const TEST_SCHEMA_STUB_NAME = path.resolve(__dirname, './test/schema.json');
 const testSchemaStub = {
-    "$id": "wrong",
-    "something": {
-        "$ref": "../../bob.file"    // would be
+    $id: 'wrong',
+    something: {
+        $ref: '../../bob.file'    // would be
     },
-    "somethingElse": {
-        "data": {
-            "$ref": "./this.file"
+    somethingElse: {
+        data: {
+            $ref: './this.file'
         }
     },
     '@noCallThru': true
@@ -21,7 +24,6 @@ const uut = proxyquire('./loader.js', {
 });
 
 describe('/data/schemas/loader', () => {
-
     describe('prefixSchemaId()', () => {
         it('adds the system\'s schemaId prefix to a given id', () => {
             const expectedPrefix = 'BACKLOGGER_SCHEMAS/';
@@ -44,15 +46,21 @@ describe('/data/schemas/loader', () => {
 
             const tests = [
                 {
-                    input: {a: 1, b: 2, c: 3, d: 4, x: 'test'},
+                    input: {
+                        a: 1, b: 2, c: 3, d: 4, x: 'test'
+                    },
                     expect: 1
                 },
                 {
-                    input: {a: 1, b: {x: 'test'}, c: 3, x: 'test'},
+                    input: {
+                        a: 1, b: { x: 'test' }, c: 3, x: 'test'
+                    },
                     expect: 2
                 },
                 {
-                    input: {a: 1, b: [{x: 'test'}, {x: 'test'}, {x: 'test'}], c: 3, x: 'test'},
+                    input: {
+                        a: 1, b: [{ x: 'test' }, { x: 'test' }, { x: 'test' }], c: 3, x: 'test'
+                    },
                     expect: 4
                 }
             ];
@@ -69,22 +77,34 @@ describe('/data/schemas/loader', () => {
 
             const tests = [
                 {
-                    input: {a: 1, b: 2, c: 3, d: 4, x: 'test'},
-                    expect: {a: 1, b: 2, c: 3, d: 4, x: 'carrot'}
+                    input: {
+                        a: 1, b: 2, c: 3, d: 4, x: 'test'
+                    },
+                    expect: {
+                        a: 1, b: 2, c: 3, d: 4, x: 'carrot'
+                    }
                 },
                 {
-                    input: {a: 1, b: {x: 'test'}, c: 3, x: 'test'},
-                    expect: {a: 1, b: {x: 'carrot'}, c: 3, x: 'carrot'}
+                    input: {
+                        a: 1, b: { x: 'test' }, c: 3, x: 'test'
+                    },
+                    expect: {
+                        a: 1, b: { x: 'carrot' }, c: 3, x: 'carrot'
+                    }
                 },
                 {
-                    input: {a: 1, b: [{x: 'test'}, {x: 'test'}, {x: 'test'}], c: 3, x: 'test'},
-                    expect: {a: 1, b: [{x: 'carrot'}, {x: 'carrot'}, {x: 'carrot'}], c: 3, x: 'carrot'}
+                    input: {
+                        a: 1, b: [{ x: 'test' }, { x: 'test' }, { x: 'test' }], c: 3, x: 'test'
+                    },
+                    expect: {
+                        a: 1, b: [{ x: 'carrot' }, { x: 'carrot' }, { x: 'carrot' }], c: 3, x: 'carrot'
+                    }
                 }
             ];
 
             tests.forEach(test => {
-                const processed = JSON.parse(JSON.stringify(test.input)); //take deep copy
-                uut.objectKeyFinder(processed, 'x', cb);    //process it
+                const processed = JSON.parse(JSON.stringify(test.input)); // take deep copy
+                uut.objectKeyFinder(processed, 'x', cb);    // process it
                 expect(processed, `Expected ${JSON.stringify(test.expect)} but got ${JSON.stringify(processed)}`).to.deep.equal(test.expect);
             });
         });

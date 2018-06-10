@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * This is a set of data manipulation / reformatting functions for
  * data from the Arango Database
@@ -24,17 +26,17 @@ function filterDbFields(data) {
 }
 
 /**
- * 
+ *
  * @param {Object} dbShowData the result from the database.
  * @returns {Object} The data mapped into a returnable show object
  */
-function mapDbShowToShow(dbShowData){
+function mapDbShowToShow(dbShowData) {
     const copy = JSON.parse(JSON.stringify(dbShowData));
     // Rename "name" attribute
     copy.animeName = copy.name;
     delete copy.name;
 
-    //return the object
+    // return the object
     return filterDbFields(copy);
 }
 
@@ -43,13 +45,13 @@ function mapDbShowToShow(dbShowData){
  * @param {Array} dbShowResults the object returned from a database query
  * @returns {Array} a flattened array of data
  */
-function flattenBacklogData(dbShowResults){
-    if(!(dbShowResults instanceof Array)){
+function flattenBacklogData(dbShowResults) {
+    if (!(dbShowResults instanceof Array)) {
         throw new TypeError(`Expected show results array, got '${typeof dbShowResults}'(${JSON.stringify(dbShowResults)})`);
     }
     return dbShowResults.map(data => {
         const copy = mapDbShowToShow(data.show);
-        if(data.edge.personalScore){
+        if (data.edge.personalScore) {
             copy.personalScore = data.edge.personalScore;
         }
         copy.recommendations = [];
@@ -57,24 +59,24 @@ function flattenBacklogData(dbShowResults){
     });
 }
 
- /**
-  * @param shows {Array}
-  * @param recommendations {Array}
+/**
+  * @param {Array} shows  an array of backlog data
+  * @param {Array} recommendations an array of recommendations data
   * @returns {Array} A single array containing the superset of shows, with any recommendations attached to the relevant show
   */
-function flattenBacklogAndRecommendations(shows, recommendations){
+function flattenBacklogAndRecommendations(shows, recommendations) {
     const flattenedShows = flattenBacklogData(shows);
 
     const result = recommendations.reduce((showsAcc, rec) => {
         const recommendedShow = rec.show;
         let showIndex = showsAcc.findIndex(showItem => showItem.malAnimeId === recommendedShow.malAnimeId);
-        if (showIndex === -1){
+        if (showIndex === -1) {
             showsAcc.push(mapDbShowToShow(recommendedShow));
-            showIndex = showsAcc.length-1;
+            showIndex = showsAcc.length - 1;
         }
-        //Add recommendation data to the show:
-        if (!showsAcc[showIndex].recommendations){
-            showsAcc[showIndex].recommendations = [];
+        // Add recommendation data to the show:
+        if (!showsAcc[showIndex].recommendations) {
+            showsAcc[showIndex].recommendations = [];   // eslint-disable-line no-param-reassign
         }
         showsAcc[showIndex].recommendations.push(Object.assign({}, rec.user, rec.rec));
 
@@ -86,31 +88,33 @@ function flattenBacklogAndRecommendations(shows, recommendations){
 }
 
 /**
- * 
+ *
  * @param {Array} dbData the database results
+ * @returns {Array} mapped array of friend data.
  */
-function flattenFriends(dbData){
-    return dbData.map(row => {
-        return JSON.parse(JSON.stringify({  // to clear any properties with undefined values
-            name: row.friendInfo.name,
-            malImport: row.edge.malImport
-        }));
-    });
+function flattenFriends(dbData) {
+    return dbData.map(row => JSON.parse(JSON.stringify({  // to clear any properties with undefined values
+        name: row.friendInfo.name,
+        malImport: row.edge.malImport
+    })));
 }
 
-function flattenUsersRecommendations(userReccomendationRows){
-    return userReccomendationRows.map(row => {
-        return {
-            animeName: row.show.name,
-            malAnimeId: row.show.malAnimeId,
-            score: row.rec.score,
-            comment: row.rec.comment,
-            to: row.to.name
-        }
-    });
+/**
+ *
+ * @param {Array} userReccomendationRows the rows from the user recommendations
+ * @returns {Array} an array of recommendations in a cleaner format
+ */
+function flattenUsersRecommendations(userReccomendationRows) {
+    return userReccomendationRows.map(row => ({
+        animeName: row.show.name,
+        malAnimeId: row.show.malAnimeId,
+        score: row.rec.score,
+        comment: row.rec.comment,
+        to: row.to.name
+    }));
 }
 
-module.exports= {
+module.exports = {
     filterDbFields,
     flattenBacklogAndRecommendations,
     flattenBacklogData,
