@@ -1,4 +1,4 @@
-'use strict';
+
 
 /**
  * @param {Integer} max the maximum value of the random integer

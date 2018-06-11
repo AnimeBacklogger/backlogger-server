@@ -1,4 +1,4 @@
-'use strict';
+
 
 /* eslint-disable no-console */ // because this is a script
 

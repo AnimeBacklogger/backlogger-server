@@ -1,4 +1,4 @@
-'use strict';
+
 
 // Loads all the schemas in current and subdirectories, using pattern './**/*.schema.json'
 const path = require('path');

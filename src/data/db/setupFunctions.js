@@ -1,4 +1,4 @@
-'use strict';
+
 
 const { Database } = require('arangojs');
 const Logger = require('../../util/Logger');

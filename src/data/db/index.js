@@ -1,4 +1,4 @@
-'use strict';
+
 
 const { Database } = require('arangojs');
 const config = require('./config');

@@ -1,4 +1,4 @@
-'use strict';
+
 
 /* global before */
 const path = require('path');
@@ -19,7 +19,8 @@ const db = (new Database({
     url: `http://${DATABASE_CONFIG.host}:8529`
 })).useDatabase(DATABASE_CONFIG.dbName);
 
-before(async () => {
+before(async function beforeTests() {
+    this.timeout(5 * 1000);
     /* eslint-disable no-console */
     console.log(''.padEnd(25, '-'));
     console.log('Setting up Database');

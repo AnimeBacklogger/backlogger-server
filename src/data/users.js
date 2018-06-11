@@ -1,4 +1,4 @@
-'use strict';
+
 
 // Functionality to retreive user information.
 // This represents the API for the rest of the system.

@@ -1,4 +1,4 @@
-'use strict';
+
 
 /**
  * This is a wrapper so that stubs can easily implement the `cursor` class wrapper for

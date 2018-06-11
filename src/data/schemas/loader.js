@@ -1,4 +1,4 @@
-'use strict';
+
 
 // Functions to get the object schemas.
 const path = require('path');

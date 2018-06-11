@@ -1,4 +1,4 @@
-'use strict';
+
 
 /* globals describe it */
 const configFileHandler = require('./configFileHandler');

@@ -1,4 +1,4 @@
-'use strict';
+
 
 /* eslint-disable require-jsdoc */ // because these are pretty obvious
 // User data errors

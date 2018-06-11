@@ -1,4 +1,4 @@
-'use strict';
+
 
 /**
  * This is a set of data manipulation / reformatting functions for

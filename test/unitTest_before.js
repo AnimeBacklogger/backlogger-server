@@ -1,4 +1,4 @@
-'use strict';
+
 
 // Lets limit those damn logs!
 const Logger = require('../src/util/Logger');

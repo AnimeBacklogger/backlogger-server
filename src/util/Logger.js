@@ -1,4 +1,4 @@
-'use strict';
+
 
 /**
 This is a wrapper for the console logs at the moment. In the future I hope to integrate with with

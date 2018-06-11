@@ -6,13 +6,15 @@ module.exports = {
         "es6": true,
         "node": true
     },
-    "extends": "airbnb-base",
+    "extends": "airbnb",
     "parserOptions": {
         "ecmaFeatures": {
-            "experimentalObjectRestSpread": true
+            "experimentalObjectRestSpread": true,
+            "impliedStrict": true,  // Removing previous 'use stricts'; and saying they'll be implied by either using import/export, or running node with --strict flag
+            "jsx": true
         },
         "ecmaVersion": 2017,
-        "sourceType": "script"
+        "sourceType": "module"
     },
     "rules": {   
         //-------------------------------------//
@@ -29,12 +31,20 @@ module.exports = {
             }
         ],
         "function-paren-newline": "off",  // This rule doesn't always work how you might expect
+        "import/no-extraneous-dependencies": [
+            "error",
+            {
+                devDependencies: true,      // airbnb's globs create lots of false positives. This is a webpacked project, most of it will be dev dependencies.
+                optionalDependencies: false,    // If they're not _actually_ optional
+                peerDependencies: false     // You must declare dependencies yourself if you're using them
+            }
+        ],
         "indent": [
             "error",
             4,
             { SwitchCase: 1 }
         ],
-        "linebreak-style": [ "error", require('os').EOL === '\r\n'? 'windows': 'unix'], // I want to enforce unix if running on Linux build server, but handle deving on local windows machine.
+        "linebreak-style": [require('os').EOL === '\r\n' ? "off": "error",  'unix'], // I want to enforce unix if running on Linux build server, but handle deving on local windows machine.
         "max-len": "off",     // we have a lot of long lines that can't be broken neatly. 
         "no-console": "error",  // There shouldn't be a need for console. We have a Logger
         "no-multi-spaces": ["error", { "ignoreEOLComments": true }],  // allow spacing before EOL comments
@@ -42,6 +52,8 @@ module.exports = {
         "no-plusplus": "off", // only an issue if you're not using semi colons
         "no-underscore-dangle": "off",  // we make use of _id and _key from Arango. Also, this rule is purely stylistic
         "no-warning-comments": "warn", // This makes tracking slightly easier :D
+        "react/jsx-indent": ["error", 4],
+        "react/jsx-indent-props": ["error", 4],
         "quotes": [
             "error",
             "single",

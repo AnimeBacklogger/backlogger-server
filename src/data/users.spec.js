@@ -1,4 +1,4 @@
-'use strict';
+
 
 /* globals describe it beforeEach */
 /* eslint max-lines: "off" */ // disable max lines because it's a test file
