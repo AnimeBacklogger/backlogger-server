@@ -2,14 +2,13 @@
 @import '../../base/styles/functions.scss';
 @import '../../base/styles/typeface.scss';
 
-
 .mainBar {
-    width: 100%;
-    background-color: $backlogger-blue;
-    color: $font-colour-invert;
-    padding: px2rem(10px);
-    font-size: $font-size-h1;
-    font-family: $font-family;
-    display: flex;
-    align-items: center;
+  width: 100%;
+  background-color: $backlogger-blue;
+  color: $font-colour-invert;
+  padding: px2rem(10px);
+  font-size: $font-size-h1;
+  font-family: $font-family;
+  display: flex;
+  align-items: center;
 }

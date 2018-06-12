@@ -1,32 +1,32 @@
 @import './styles/colours.scss';
 @import './styles/typeface.scss';
 
-
 * {
-    box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 body, html {
-    margin: 0;
-    padding: 0;
-    background-color: $light-grey;
-    color: $font-colour;
-    font-family: $font-family;
+  margin: 0;
+  padding: 0;
+  background-color: $light-grey;
+  color: $font-colour;
+  font-family: $font-family;
 }
 
 //*/
 :global(.undefined) {
-  background-color: #FF7b93;
+  background-color: #ff7b93;
   border: thick solid red;
-  &::before{
-    position:fixed;
+
+  &::before {
+    position: fixed;
     top: 10px;
     left: 10px;
     display: block;
     content: 'An undefined style exists on your page!';
     padding: 10px;
     color: white;
-    background-color: rgba(0,0,0,0.5);
+    background-color: rgba(0, 0, 0, 0.5);
     border: thin solid red;
     font-size: 2rem;
   }

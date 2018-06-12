@@ -1,7 +1,8 @@
-@function px2rem($px){
-    //TODO: Do unit checking and removal
-    @if(unit($px)){
-        $px: $px/1px;
-    }
-    @return $px/16*(1rem);
+@function px2rem($px) {
+  //TODO: Do unit checking and removal
+  @if (unit($px)) {
+    $px: $px/1px;
+  }
+
+  @return $px/16*(1rem);
 }
