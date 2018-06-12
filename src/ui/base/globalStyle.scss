@@ -1,4 +1,6 @@
 @import './styles/colours.scss';
+@import './styles/typeface.scss';
+
 
 * {
     box-sizing: border-box;
@@ -8,6 +10,8 @@ body, html {
     margin: 0;
     padding: 0;
     background-color: $light-grey;
+    color: $font-colour;
+    font-family: $font-family;
 }
 
 //*/

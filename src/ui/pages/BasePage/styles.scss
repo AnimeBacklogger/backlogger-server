@@ -1,7 +1,12 @@
 @import '../../base/styles/colours.scss';
+@import '../../base/styles/functions.scss';
 
 .mainPage{
     flex: 1 0 auto;
+    padding: px2rem(20px);
+    background-color: $white;
+    max-width: px2rem(1200px);
+    width: 100%;
 }
 
 .pageBody{
@@ -10,5 +15,4 @@
     align-items: center;
     width: 100%;
     height: 100%;
-
 }

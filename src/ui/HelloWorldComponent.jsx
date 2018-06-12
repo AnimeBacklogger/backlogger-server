@@ -1,3 +1,9 @@
 import React from 'react';
+import Header from './atoms/Header';
 
-export default () => (<div>Hello world!</div>);
+export default () => (
+    <div>
+        <Header>Hello world!</Header>
+        <span>This is more text</span>
+    </div>
+);

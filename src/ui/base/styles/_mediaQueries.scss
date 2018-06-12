@@ -1,0 +1,7 @@
+@import 'functions.scss';
+
+$bp-medium: px2rem(600px);
+$bp-large: px2re(1000px);
+
+$mq-medium: 'screen and (min-width: #{$bp-medium})';
+$mq-large: 'screen and (min-width: #{$bp-large})';

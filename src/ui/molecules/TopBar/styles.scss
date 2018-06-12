@@ -1,14 +1,15 @@
 @import '../../base/styles/colours.scss';
 @import '../../base/styles/functions.scss';
+@import '../../base/styles/typeface.scss';
 
 
 .mainBar {
     width: 100%;
-    background-color: $BackloggerBlue;
-    color: $TextInvertColour;
+    background-color: $backlogger-blue;
+    color: $font-colour-invert;
     padding: px2rem(10px);
-    font-size: 2rem;
-    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-size: $font-size-h1;
+    font-family: $font-family;
     display: flex;
     align-items: center;
 }

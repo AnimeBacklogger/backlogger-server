@@ -1,19 +1,16 @@
 // Brand Colour definitions
-$BackloggerBlue: #517cdf;
+$backlogger-blue: #517cdf;
 
 // Primaries
 $red : #E44;
 $green: #6F6;
-$blue: $BackloggerBlue;
+$blue: $backlogger-blue;
 $black: #2e2e2e;
 $white: #F8F8F8;
 $light-grey: #DDD;
 $light-blue: #718cef;
 
-// Text colours
-$TextColour: $black;
-$TextInvertColour: $white;
-
 // Table colours
-$TableBorderColour: $light-grey; 
-$TableHeadRowColour: $light-blue;
+//TODO: move to tables definitions
+$table-border-colour: $light-grey; 
+$table-headrow-Colour: $light-blue;
